@@ -4,7 +4,7 @@
 #define CLIENT_SK_HEX "2c01132c8bcf2ffa1f97c12c414416830fbbb29c5fea0c7447ac92c3186991e3"
 #define SERVER_PK_HEX "06ccf32ab75cddb9ff0b9ba7ecaf1aa401c6d76fcac9fdb10b447f8fdb7b790c"
 
-HTTPClient http;
+static HTTPClient http;
 
 void send_updates_to_cloud(String message) {
     String      cookie;
@@ -33,7 +33,7 @@ void send_updates_to_cloud(String message) {
     Serial.println("[HTTP] end ...");
 }
 
-String process_cookie(String pre_cookie) {
+static String process_cookie(String pre_cookie) {
     const char *scan_cookie = pre_cookie.c_str();
 
     // Cookie is the portion of the value of Set-Cookie header before the ';'
@@ -49,7 +49,7 @@ String process_cookie(String pre_cookie) {
     return cookie;
 }
 
-void send_message(String cookie, String nonce_hex, String message) {
+static void send_message(String cookie, String nonce_hex, String message) {
     String sender = "client";
     String plaintext;
     String response;
