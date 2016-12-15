@@ -57,7 +57,7 @@ static void send_message(String cookie, String nonce_hex, String message) {
 
     http.begin(String(HOST) + "/send_message");
     http.addHeader("Cookie", cookie);
-    // TODO: uint8_t nonce_bytes: Hex decode nonce_hex 192 bytes
+    // TODO: uint8_t nonce_bytes: Hex decode nonce_hex 192 bits (24 bytes)
     // TODO: uint8_t server_pk_bytes: Hex decode SERVER_PK_HEX
     // TODO: uint8_t client_sk_bytes: Hex decode CLIENT_SK_HEX
     // TODO: uint8_t client_ssk_bytes: Hex decode CLIENT_SSK_HEX
