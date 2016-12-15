@@ -10,11 +10,11 @@ func_name(void)
 static void
 func_random_buf(void * const buf, const size_t size)
 {
-    ESP8266TrueRandom.memfill(buf, size);
+    ESP8266TrueRandom.memfill((char*) buf, size);
 }
 
 static void
-bin2hex(char * const hex, const size_t hex_maxlen,
+bin2hex(unsigned char * const hex, const size_t hex_maxlen,
         const unsigned char * const bin, const size_t bin_len)
 {
     // `hex` must be a pointer to an array of size `hex_maxlen`
@@ -41,7 +41,7 @@ bin2hex(char * const hex, const size_t hex_maxlen,
     hex[i * 2U] = 0U;
 }
 
-static int
+static int8_t
 hex2bin(unsigned char * const bin, const size_t bin_maxlen,
         const char * const hex, const size_t hex_len,
         const char * const ignore, int * const bin_len,
@@ -99,8 +99,8 @@ hex2bin(unsigned char * const bin, const size_t bin_maxlen,
 static void
 print_hex(const unsigned char *bin, const size_t bin_len)
 {
-    int  hex_size = bin_len*2 + 1;
-    char hex[hex_size];
+    uint8_t       hex_size = bin_len*2 + 1;
+    unsigned char hex[hex_size];
 
     // This next line fixed the exception problem
     // WEIRD WEIRD WEIRD
@@ -110,10 +110,10 @@ print_hex(const unsigned char *bin, const size_t bin_len)
     Serial.printf("%s\n", hex);
 }
 
-void encrypt(char * const ciphertext_hex,
-        char * const nonce_hex,
-        char * const message,
-        int * const message_len)
+void encrypt(unsigned char * const ciphertext_hex,
+        const char * const nonce_hex,
+        const char * const message,
+        const int * const message_len)
 {
     unsigned char  client_sk[crypto_box_SECRETKEYBYTES];
     unsigned char  server_pk[crypto_box_PUBLICKEYBYTES];
@@ -146,7 +146,7 @@ void encrypt(char * const ciphertext_hex,
     crypto_box_primitive();
 
     // Encrypt message and write into ciphertext
-    crypto_box_easy(ciphertext, message, *message_len, nonce, server_pk, client_sk);
+    crypto_box_easy(ciphertext, (const unsigned char*)message, *message_len, nonce, server_pk, client_sk);
 
     // Encode ciphertext and write into ciphertext_hex
     ciphertext_len = sizeof(ciphertext);

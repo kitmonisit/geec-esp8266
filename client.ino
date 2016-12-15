@@ -8,11 +8,11 @@
 
 static HTTPClient  http;
 
-static int  httpCode;
+static uint8_t httpCode;
 static char cookie[112];
 static char nonce_hex[crypto_box_NONCEBYTES*2 + 1];
 
-void send_updates_to_cloud(char * const message) {
+void send_updates_to_cloud(const char * const message) {
     // Message length is limited to 512 characters
 
     int idx = 0;
@@ -73,9 +73,9 @@ static void *process_cookie(String pre_cookie, char * const cookie) {
     Serial.println();
 }
 
-static void send_message(char * const cookie, char * const message, int * const message_len) {
+static void send_message(const char * const cookie, const char * const message, const int * const message_len) {
     unsigned char ciphertext_hex[(crypto_box_MACBYTES + *message_len)*2 + 1];
-    int idx = 0;
+    uint8_t idx = 0;
     String payload = String(CLIENT_NAME);
     String cookie_str;
     String response;
