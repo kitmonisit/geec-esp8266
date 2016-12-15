@@ -1,6 +1,5 @@
 #include <ESP8266WiFi.h>
 #include "frozen.h" // JSON emitter and parser
-#include "ESP8266TrueRandom.h" // true random number generator
 
 #define WIFI_SSID "."
 #define WIFI_PASSWORD "."

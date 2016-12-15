@@ -1,5 +1,6 @@
 #include <sodium.h>
 #include <errno.h>
+#include "ESP8266TrueRandom.h" // true random number generator
 
 static const char *
 func_name(void)

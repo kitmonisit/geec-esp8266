@@ -41,13 +41,14 @@ static void request_nonce(void) {
     if (httpCode == HTTP_CODE_OK) {
         process_cookie(http.header("Set-Cookie"), cookie);
         strcpy(nonce_hex, http.getString().c_str());
-        http.end();
+        Serial.print(F("[HTTP] GET /request_nonce successful\n"));
+        Serial.printf("cookie is\n  %s\n", cookie);
+        Serial.printf("nonce is\n  %s\n", nonce_hex);
     } else {
         Serial.printf("[HTTP] GET failed, error: %s\n", http.errorToString(httpCode).c_str());
-        http.end();
     }
+    http.end();
     Serial.print(F("[HTTP] end ...\n"));
-    Serial.printf("nonce\n%s\n", nonce_hex);
 }
 
 static void *process_cookie(String pre_cookie, char * const cookie) {
@@ -63,14 +64,6 @@ static void *process_cookie(String pre_cookie, char * const cookie) {
 
     // Store the characters before the ';' into cookie
     strcpy(cookie, pre_cookie.substring(0, len_cookie).c_str());
-    Serial.println("cookie is");
-    Serial.println(pre_cookie);
-    int idx = 0;
-    while (*(cookie + idx) != '\0') {
-        Serial.printf("%c", *(cookie + idx));
-        idx++;
-    }
-    Serial.println();
 }
 
 static void send_message(const char * const cookie, const char * const message, const int * const message_len) {
@@ -85,6 +78,8 @@ static void send_message(const char * const cookie, const char * const message, 
         cookie_str.concat((char) *(cookie + idx));
         idx++;
     }
+
+    Serial.print(F("[HTTP] begin ...\n"));
     http.begin(String(HOST) + "/send_message");
     http.addHeader("Cookie", cookie_str);
     // DONE: uint8_t nonce_bytes: Hex decode nonce_hex 192 bits (24 bytes)
@@ -97,13 +92,8 @@ static void send_message(const char * const cookie, const char * const message, 
     // TODO: uint8_t signedtext_hex: Hex encode (signedtext)
     // TODO: uint8_t full_message: client_signedtext
     encrypt(ciphertext_hex, nonce_hex, message, message_len);
-    Serial.println("ciphertext is");
-    idx = 0;
-    while (*(ciphertext_hex + idx) != '\0') {
-        Serial.printf("%c", *(ciphertext_hex + idx));
-        idx++;
-    }
-    Serial.println();
+    Serial.printf("plaintext is\n  %s\n", ciphertext_hex);
+    Serial.printf("ciphertext is\n  %s\n", ciphertext_hex);
     idx = 0;
     while (idx < crypto_box_NONCEBYTES*2) {
         payload.concat((char) *(nonce_hex + idx));
@@ -115,16 +105,18 @@ static void send_message(const char * const cookie, const char * const message, 
         idx++;
     }
 
-    Serial.println("[HTTP] POST /send_message");
+    Serial.println(F("[HTTP] POST /send_message"));
     Serial.println(payload);
     httpCode = http.POST(payload);
     if (httpCode == HTTP_CODE_OK) {
         response = http.getString();
-        Serial.println(response);
+        Serial.print(F("[HTTP] POST /send_message successful\n"));
+        Serial.printf("response from server is\n  %s\n", response.c_str());
     } else {
         Serial.printf("[HTTP] POST failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
     http.end();
+    Serial.print(F("[HTTP] end ...\n"));
 }
 
 // vim:fdm=syntax
