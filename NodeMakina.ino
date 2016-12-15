@@ -1,5 +1,4 @@
 #include <ESP8266WiFi.h>
-#include <sodium.h>
 #include "frozen.h" // JSON emitter and parser
 #include "ESP8266TrueRandom.h" // true random number generator
 
@@ -33,10 +32,7 @@ void setup() {
 
 void loop() {
     delay(1000);
-
-    /*int ret = box();*/
     /*Serial.printf("%d free RAM\n", esp.getFreeHeap());*/
-    /*Serial.printf("box ret is %d\n", ret);*/
 }
 
 // vim:fdm=syntax

@@ -1,6 +1,8 @@
 #include <ESP8266HTTPClient.h>
+#include <sodium.h>
 
 #define HOST "http://tranquil-dusk-55557.herokuapp.com"
+#define CLIENT_NAME "client_"
 #define CLIENT_SK_HEX "2c01132c8bcf2ffa1f97c12c414416830fbbb29c5fea0c7447ac92c3186991e3"
 #define SERVER_PK_HEX "06ccf32ab75cddb9ff0b9ba7ecaf1aa401c6d76fcac9fdb10b447f8fdb7b790c"
 
@@ -11,6 +13,8 @@ static char cookie[112];
 static char nonce_hex[crypto_box_NONCEBYTES*2 + 1];
 
 void send_updates_to_cloud(char * const message) {
+    // Message length is limited to 512 characters
+
     int idx = 0;
     int message_len = 0;
     while (*(message+idx) != '\0') {
@@ -72,7 +76,7 @@ static void *process_cookie(String pre_cookie, char * const cookie) {
 static void send_message(char * const cookie, char * const message, int * const message_len) {
     unsigned char ciphertext_hex[(crypto_box_MACBYTES + *message_len)*2 + 1];
     int idx = 0;
-    String payload = String("client_");
+    String payload = String(CLIENT_NAME);
     String cookie_str;
     String response;
 
@@ -83,12 +87,12 @@ static void send_message(char * const cookie, char * const message, int * const 
     }
     http.begin(String(HOST) + "/send_message");
     http.addHeader("Cookie", cookie_str);
-    // TODO: uint8_t nonce_bytes: Hex decode nonce_hex 192 bits (24 bytes)
-    // TODO: uint8_t server_pk_bytes: Hex decode SERVER_PK_HEX
-    // TODO: uint8_t client_sk_bytes: Hex decode CLIENT_SK_HEX
-    // TODO: uint8_t client_ssk_bytes: Hex decode CLIENT_SSK_HEX
-    // TODO: uint8_t ciphertext_bytes: Encrypt (nonce_bytes, server_pk_bytes, client_sk_bytes, message)
-    // TODO: uint8_t ciphertext_hex: Hex encode (ciphertext)
+    // DONE: uint8_t nonce_bytes: Hex decode nonce_hex 192 bits (24 bytes)
+    // DONE: uint8_t server_pk_bytes: Hex decode SERVER_PK_HEX
+    // DONE: uint8_t client_sk_bytes: Hex decode CLIENT_SK_HEX
+    // DONE: uint8_t client_ssk_bytes: Hex decode CLIENT_SSK_HEX
+    // DONE: uint8_t ciphertext_bytes: Encrypt (nonce_bytes, server_pk_bytes, client_sk_bytes, message)
+    // DONE: uint8_t ciphertext_hex: Hex encode (ciphertext)
     // TODO: uint8_t signedtext: Sign (client_ssk_bytes, ciphertext_hex)
     // TODO: uint8_t signedtext_hex: Hex encode (signedtext)
     // TODO: uint8_t full_message: client_signedtext
@@ -110,7 +114,6 @@ static void send_message(char * const cookie, char * const message, int * const 
         payload.concat((char) *(ciphertext_hex + idx));
         idx++;
     }
-    /*plaintext = sender + "_" + nonce_hex + message;*/
 
     Serial.println("[HTTP] POST /send_message");
     Serial.println(payload);
