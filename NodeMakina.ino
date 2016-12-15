@@ -1,10 +1,21 @@
 #include <ESP8266WiFi.h>
 #include <sodium.h>
 
-#define WIFI_SSID "....."
-#define WIFI_PASSWORD "....."
+#define WIFI_SSID "."
+#define WIFI_PASSWORD "."
 
-#define MAX_INPUT_LEN 0x300
+#define MAX_INPUT_LEN 512
+
+static const char *func_name(void) {
+    return "dummy";
+}
+
+static void func_random_buf(void * const buf, const size_t size) {
+}
+
+static uint32_t func_random(void) {
+    return 5;
+}
 
 char *bin2hex(char * const hex, const size_t hex_maxlen, const unsigned char * const bin, const size_t bin_len)
 {
@@ -46,17 +57,6 @@ void print_hex(const unsigned char *bin, const size_t bin_len) {
     /*free(hex);*/
 }
 
-static const char *func_name(void) {
-    return "dummy";
-}
-
-static void func_random_buf(void * const buf, const size_t size) {
-}
-
-static uint32_t func_random(void) {
-    return random(65535);
-}
-
 static int
 box(void)
 {
@@ -72,8 +72,8 @@ box(void)
         0x41,0x61,0x41,0x61,0x41,0x61,
         0x41,0x61,0x41,0x61,0x41,0x61
     };
-    unsigned char message[] = "aaaa";
-    unsigned char ciphertext[crypto_box_MACBYTES + MAX_INPUT_LEN];
+    unsigned char message[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    unsigned char ciphertext[crypto_box_MACBYTES + sizeof(message)];
     size_t        message_len;
     size_t        ciphertext_len;
     int           ret;
@@ -133,8 +133,12 @@ void connectToWiFi() {
 
 void setup() {
     Serial.begin(115200);
-    /*connectToWiFi();*/
+    connectToWiFi();
+}
 
+void loop() {
+    delay(1000);
+    send_updates_to_cloud("Hello world");
     struct randombytes_implementation impl = {
         SODIUM_C99(.implementation_name =) func_name,
         SODIUM_C99(.random =) func_random,
@@ -143,16 +147,12 @@ void setup() {
         SODIUM_C99(.buf =) func_random_buf,
         SODIUM_C99(.close =) NULL,
     };
+    randombytes_set_implementation(&impl);
+    sodium_init();
 
-    int result = randombytes_set_implementation(&impl);
-    int out = sodium_init();
     int ret = box();
     Serial.printf("box ret is %d\n", ret);
-}
 
-void loop() {
-    delay(10000);
-    /*send_updates_to_cloud("Hello world");*/
 }
 
 // vim:fdm=syntax
