@@ -27,7 +27,7 @@ void setup() {
 
 void loop() {
     delay(10000);
-    update_machine_status("Hello world");
+    send_updates_to_cloud("Hello world");
 }
 
 // vim:fdm=syntax

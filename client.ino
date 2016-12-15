@@ -6,7 +6,7 @@
 
 HTTPClient http;
 
-void update_machine_status(String message) {
+void send_updates_to_cloud(String message) {
     String cookie;
     String nonce_hex;
     const char *headerkeys[] = {"Set-Cookie"};
