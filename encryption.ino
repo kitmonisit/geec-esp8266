@@ -1,4 +1,6 @@
 #include <sodium.h>
+#include <string.h>
+#include <errno.h>
 
 #define MAX_INPUT_LEN 512
 
@@ -28,14 +30,67 @@ static void *bin2hex(char * const hex, const size_t hex_maxlen, const unsigned c
         b = bin[i] >> 4;
         x = (unsigned char) (87 + c + (((c - 10) >> 8) & ~38)) << 8 |
             (unsigned char) (87 + b + (((b - 10) >> 8) & ~38));
-        /*Serial.printf("x is %x\n", x);*/
-        /*Serial.printf("i is %d\n", i);*/
         hex[i * 2] = (char) x;
         x >>= 8;
         hex[i * 2 + 1] = (char) x;
         i++;
     }
     hex[i * 2U] = 0U;
+}
+
+int
+hex2bin(unsigned char * const bin, const size_t bin_maxlen,
+               const char * const hex, const size_t hex_len,
+               const char * const ignore, int * const bin_len,
+               const char ** const hex_end)
+{
+    size_t        bin_pos = (size_t) 0U;
+    size_t        hex_pos = (size_t) 0U;
+    int           ret = 0;
+    unsigned char c;
+    unsigned char c_acc = 0U;
+    unsigned char c_alpha0, c_alpha;
+    unsigned char c_num0, c_num;
+    unsigned char c_val;
+    unsigned char state = 0U;
+
+    while (hex_pos < hex_len) {
+        c = (unsigned char) hex[hex_pos];
+        c_num = c ^ 48U;
+        c_num0 = (c_num - 10U) >> 8;
+        c_alpha = (c & ~32U) - 55U;
+        c_alpha0 = ((c_alpha - 10U) ^ (c_alpha - 16U)) >> 8;
+        if ((c_num0 | c_alpha0) == 0U) {
+            if (ignore != NULL && state == 0U && strchr(ignore, c) != NULL) {
+                hex_pos++;
+                continue;
+            }
+            break;
+        }
+        c_val = (c_num0 & c_num) | (c_alpha0 & c_alpha);
+        if (bin_pos >= bin_maxlen) {
+            ret = -1;
+            errno = ERANGE;
+            break;
+        }
+        if (state == 0U) {
+            c_acc = c_val * 16U;
+        } else {
+            bin[bin_pos++] = c_acc | c_val;
+        }
+        state = ~state;
+        hex_pos++;
+    }
+    if (state != 0U) {
+        hex_pos--;
+    }
+    if (hex_end != NULL) {
+        *hex_end = &hex[hex_pos];
+    }
+    if (bin_len != NULL) {
+        *bin_len = bin_pos;
+    }
+    return ret;
 }
 
 void print_hex(const unsigned char *bin, const size_t bin_len) {
@@ -50,25 +105,16 @@ void print_hex(const unsigned char *bin, const size_t bin_len) {
     Serial.printf("%s\n", hex);
 }
 
-int box(void)
-{
-    unsigned char bob_pk[crypto_box_PUBLICKEYBYTES]; /* Bob's public key */
-    unsigned char bob_sk[crypto_box_SECRETKEYBYTES]; /* Bob's secret key */
-
-    unsigned char alice_pk[crypto_box_PUBLICKEYBYTES]; /* Alice's public key */
-    unsigned char alice_sk[crypto_box_SECRETKEYBYTES]; /* Alice's secret key */
-
-    unsigned char nonce[crypto_box_NONCEBYTES] = {
-        0x41,0x61,0x41,0x61,0x41,0x61,
-        0x41,0x61,0x41,0x61,0x41,0x61,
-        0x41,0x61,0x41,0x61,0x41,0x61,
-        0x41,0x61,0x41,0x61,0x41,0x61
-    };
-    unsigned char message[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    unsigned char ciphertext[crypto_box_MACBYTES + sizeof(message)];
-    size_t        message_len;
-    size_t        ciphertext_len;
-    int           ret;
+void encrypt(char * const ciphertext_hex, char * const nonce_hex, char * const message, int * const message_len) {
+    unsigned char  client_sk[crypto_box_SECRETKEYBYTES];
+    unsigned char  server_pk[crypto_box_PUBLICKEYBYTES];
+    unsigned char  ciphertext[crypto_box_MACBYTES + *message_len];
+    unsigned char  nonce[crypto_box_NONCEBYTES];
+    int            nonce_hex_len = crypto_box_NONCEBYTES*2;
+    int            ciphertext_len;
+    int            ciphertext_hex_len;
+    int            bin_len;
+    const char    *hex_end;
 
     struct randombytes_implementation impl = {
         SODIUM_C99(.implementation_name =) func_name,
@@ -81,42 +127,19 @@ int box(void)
     randombytes_set_implementation(&impl);
     sodium_init();
 
-    crypto_box_keypair(bob_pk, bob_sk);     // generate Bob's keys
-    crypto_box_keypair(alice_pk, alice_sk); // generate Alice's keys
-    randombytes_buf(nonce, sizeof(nonce));
-    Serial.print(F("\nbob_pk: "));
-    print_hex(bob_pk, sizeof(bob_pk));
-    Serial.print(F("bob_sk: "));
-    print_hex(bob_sk, sizeof(bob_sk));
-    Serial.print(F("alice_pk: "));
-    print_hex(alice_pk, sizeof(alice_pk));
-    Serial.print(F("alice_sk: "));
-    print_hex(alice_sk, sizeof(alice_sk));
-    Serial.print(F("\nnonce: "));
-    print_hex(nonce, crypto_box_NONCEBYTES);
+    sodium_memzero(client_sk, sizeof client_sk);
+    sodium_memzero(server_pk, sizeof server_pk);
 
-    message_len = sizeof(message);
+    hex2bin(nonce, sizeof(nonce), nonce_hex, nonce_hex_len, NULL, &bin_len, &hex_end);
+    hex2bin(client_sk, sizeof(client_sk), CLIENT_SK_HEX, strlen(CLIENT_SK_HEX), NULL, &bin_len, &hex_end);
+    hex2bin(server_pk, sizeof(client_sk), SERVER_PK_HEX, strlen(CLIENT_SK_HEX), NULL, &bin_len, &hex_end);
 
     crypto_box_primitive();
     // Encrypt message and write into ciphertext
-    crypto_box_easy(ciphertext, message, message_len, nonce, alice_pk, bob_sk);
-    Serial.print(F("ciphertext: "));
-    print_hex(ciphertext, crypto_box_MACBYTES + message_len);
-    ciphertext_len = crypto_box_MACBYTES + message_len;
-
-    // Decrypt ciphertext and write into message
-    ret = crypto_box_open_easy(message, ciphertext, ciphertext_len, nonce, bob_pk, alice_sk);
-    Serial.print(F("message: "));
-    print_hex(message, message_len);
-    Serial.print(F("plaintext: "));
-    Serial.printf("%s\n", message);
-
-    sodium_memzero(bob_sk, sizeof bob_sk); // wipe sensitive data
-    sodium_memzero(alice_sk, sizeof alice_sk);
-    sodium_memzero(message, sizeof message);
-    sodium_memzero(ciphertext, sizeof ciphertext);
-
-    return ret;
+    crypto_box_easy(ciphertext, message, *message_len, nonce, server_pk, client_sk);
+    ciphertext_len = sizeof(ciphertext);
+    ciphertext_hex_len = ciphertext_len*2 + 1;
+    bin2hex(ciphertext_hex, ciphertext_hex_len, ciphertext, ciphertext_len);
 }
 
 // vim:fdm=syntax
