@@ -10,8 +10,11 @@ static void func_random_buf(void * const buf, const size_t size) {
     ESP8266TrueRandom.memfill(buf, size);
 }
 
-static char *bin2hex(char * const hex, const size_t hex_maxlen, const unsigned char * const bin, const size_t bin_len)
+static void *bin2hex(char * const hex, const size_t hex_maxlen, const unsigned char * const bin, const size_t bin_len)
 {
+    // `hex` must be a pointer to an array of size `hex_maxlen`
+    // Result will be written to `hex`
+
     int          i = 0;
     unsigned int x;
     int          b;
@@ -33,14 +36,12 @@ static char *bin2hex(char * const hex, const size_t hex_maxlen, const unsigned c
         i++;
     }
     hex[i * 2U] = 0U;
-    return hex;
 }
 
 void print_hex(const unsigned char *bin, const size_t bin_len) {
-    int     hex_size;
+    int  hex_size = bin_len*2 + 1;
+    char hex[hex_size];
 
-    hex_size = bin_len * 2 + 1;
-    char   hex[hex_size];
     // This next line fixed the exception problem
     // WEIRD WEIRD WEIRD
     /*Serial.printf("\nfirst hex is %p\n", &hex);*/
