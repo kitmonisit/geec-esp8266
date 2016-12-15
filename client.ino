@@ -1,12 +1,13 @@
 #include <ESP8266HTTPClient.h>
 #include <sodium.h>
 
-#define HOST "http://tranquil-dusk-55557.herokuapp.com"
-#define CLIENT_NAME "client_"
-#define CLIENT_SK_HEX "2c01132c8bcf2ffa1f97c12c414416830fbbb29c5fea0c7447ac92c3186991e3"
-#define SERVER_PK_HEX "06ccf32ab75cddb9ff0b9ba7ecaf1aa401c6d76fcac9fdb10b447f8fdb7b790c"
+#define HOST "http://vast-lake-95491.herokuapp.com"
+#define CLIENT_NAME "node04_"
+#define CLIENT_SK_HEX "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
+#define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d"
+#define SERVER_PK_HEX "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
 
-static HTTPClient  http;
+static HTTPClient http;
 
 static uint8_t httpCode;
 static char cookie[112];
