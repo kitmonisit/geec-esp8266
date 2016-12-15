@@ -1,10 +1,15 @@
-In OS X, `platform.txt` can be found in
+The ESP8266 board tools root path
+
+In OS X:
 
     ~/Library/Arduino15/packages/esp8266/hardware/esp8266/2.3.0
 
-In Linux, `platform.txt` can be found in
+In Linux:
 
     ~/.arduino15/packages/esp8266/hardware/esp8266/2.3.0
+
+
+## Compiler flags
 
 In the `platform.txt` file, be sure to have the following entries
 
@@ -16,4 +21,15 @@ In the `platform.txt` file, be sure to have the following entries
     compiler.c.elf.libs=-lm -lgcc -lhal -lphy -lpp -lnet80211 -lwpa -lcrypto -lmain -lwps -laxtls -lsmartconfig -lmesh -lwpa2 {build.lwip_lib} -lstdc++ -lsodium
 
     compiler.cpp.flags=-c {compiler.warning_flags} -Os -g -mlongcalls -mtext-section-literals -fno-exceptions -fno-rtti -falign-functions=4 -std=c++11 -MMD -ffunction-sections -fdata-sections
+
+## Linker script
+
+You will need a customized linker script, here provided as
+[ld/eagle.app.v6.common.ld](ld/eagle.app.v6.common.ld).  In `tools/sdk/ld`,
+replace `eagle.app.v6.common.ld` with the file of the same name in this
+repository.
+
+This custom linker script is necessary so that
+[libsodium/libsodium.a](libsodium/libsodium.a) is stored in flash memory and
+not in RAM.
 
