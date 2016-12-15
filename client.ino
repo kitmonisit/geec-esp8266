@@ -7,11 +7,11 @@
 HTTPClient http;
 
 void send_updates_to_cloud(String message) {
-    String cookie;
-    String nonce_hex;
+    String      cookie;
+    String      nonce_hex;
+    int         httpCode;
     const char *headerkeys[] = {"Set-Cookie"};
-    size_t headerkeyssize = sizeof(headerkeys) / sizeof(char*);
-    int httpCode;
+    const char  headerkeyssize = sizeof(headerkeys) / sizeof(char*);
 
     Serial.println("[HTTP] begin ...");
 
@@ -38,7 +38,7 @@ String process_cookie(String pre_cookie) {
 
     // Cookie is the portion of the value of Set-Cookie header before the ';'
     // Count the number of characters before the ';'
-    size_t len_cookie = 0;
+    char len_cookie = 0; // cookie is less than 256 bytes long
     while(*scan_cookie != ';') {
         scan_cookie++;
         len_cookie++;
