@@ -1,33 +1,33 @@
 #include <ESP8266HTTPClient.h>
 #include <sodium.h>
 
-#define HOST "http://vast-lake-95491.herokuapp.com"
-#define CLIENT_NAME "node04_"
-#define CLIENT_SK_HEX "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
+#define HOST           "http://vast-lake-95491.herokuapp.com"
+#define CLIENT_NAME    "node04_"
+#define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d"
-#define SERVER_PK_HEX "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
+#define SERVER_PK_HEX  "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
 
 static HTTPClient http;
 
 static uint8_t httpCode;
-static char cookie[112];
-static char nonce_hex[crypto_box_NONCEBYTES*2 + 1];
+static char    cookie[112];
+static char    nonce_hex[crypto_box_NONCEBYTES*2 + 1];
 
-void send_updates_to_cloud(const char * const message) {
+void send_updates_to_cloud(const char *const plaintext)
+{
     // Message length is limited to 512 characters
 
-    int idx = 0;
-    int message_len = 0;
-    while (*(message+idx) != '\0') {
-        message_len++;
-        idx++;
+    int plaintext_len = 0;
+    while (*(plaintext+plaintext_len) != '\0') {
+        plaintext_len++;
     }
 
     request_nonce();
-    if (httpCode == HTTP_CODE_OK) send_message(cookie, message, &message_len);
+    if (httpCode == HTTP_CODE_OK) send_message(cookie, plaintext, &plaintext_len);
 }
 
-static void request_nonce(void) {
+static void request_nonce(void)
+{
     const char *headerkeys[] = {"Set-Cookie"};
     const char  headerkeyssize = sizeof(headerkeys) / sizeof(char*);
 
@@ -40,7 +40,7 @@ static void request_nonce(void) {
     Serial.print(F("[HTTP] GET /request_nonce\n"));
     httpCode = http.GET();
     if (httpCode == HTTP_CODE_OK) {
-        process_cookie(http.header("Set-Cookie"), cookie);
+        process_cookie(http.header("Set-Cookie"));
         strcpy(nonce_hex, http.getString().c_str());
         Serial.print(F("[HTTP] GET /request_nonce successful\n"));
         Serial.printf("cookie is\n  %s\n", cookie);
@@ -52,23 +52,18 @@ static void request_nonce(void) {
     Serial.print(F("[HTTP] end ...\n"));
 }
 
-static void *process_cookie(String pre_cookie, char * const cookie) {
-    const char *scan_cookie = pre_cookie.c_str();
-
-    // Cookie is the portion of the value of Set-Cookie header before the ';'
-    // Count the number of characters before the ';'
-    char len_cookie = 0; // cookie is less than 256 bytes long
-    while(*scan_cookie != ';') {
-        scan_cookie++;
-        len_cookie++;
-    }
-
-    // Store the characters before the ';' into cookie
-    strcpy(cookie, pre_cookie.substring(0, len_cookie).c_str());
+static void *process_cookie(String pre_cookie)
+{
+    uint8_t len_cookie = (uint8_t) pre_cookie.indexOf(';') + 1;
+    pre_cookie.toCharArray(cookie, len_cookie);
 }
 
-static void send_message(const char * const cookie, const char * const message, const int * const message_len) {
-    unsigned char ciphertext_hex[(crypto_box_MACBYTES + *message_len)*2 + 1];
+static void send_message(
+    const char *const cookie,
+    const char *const plaintext,
+    const int  *const plaintext_len)
+{
+    unsigned char ciphertext_hex[(crypto_box_MACBYTES + *plaintext_len)*2 + 1];
     uint8_t idx = 0;
     String payload = String(CLIENT_NAME);
     String cookie_str;
@@ -92,8 +87,8 @@ static void send_message(const char * const cookie, const char * const message, 
     // TODO: uint8_t signedtext: Sign (client_ssk_bytes, ciphertext_hex)
     // TODO: uint8_t signedtext_hex: Hex encode (signedtext)
     // TODO: uint8_t full_message: client_signedtext
-    encrypt(ciphertext_hex, nonce_hex, message, message_len);
-    Serial.printf("plaintext is\n  %s\n", ciphertext_hex);
+    encrypt(ciphertext_hex, nonce_hex, plaintext, plaintext_len);
+    Serial.printf("plaintext is\n  %s\n", plaintext);
     Serial.printf("ciphertext is\n  %s\n", ciphertext_hex);
     idx = 0;
     while (idx < crypto_box_NONCEBYTES*2) {
