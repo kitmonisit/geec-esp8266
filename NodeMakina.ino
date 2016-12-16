@@ -26,7 +26,7 @@ void connectToWiFi() {
 void setup() {
     Serial.begin(115200);
     connectToWiFi();
-    send_updates_to_cloud("Hello world, encryption works! Yeaahh!");
+    send_updates_to_cloud("The quick brown fox jumps over the lazy dog.");
 }
 
 void loop() {

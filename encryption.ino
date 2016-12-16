@@ -103,27 +103,18 @@ print_hex(const unsigned char *bin, const size_t bin_len)
     uint8_t       hex_size = bin_len*2 + 1;
     unsigned char hex[hex_size];
 
-    // This next line fixed the exception problem
-    // WEIRD WEIRD WEIRD
-    /*Serial.printf("\nfirst hex is %p\n", &hex);*/
-
     bin2hex(hex, hex_size, bin, bin_len);
     Serial.printf("%s\n", hex);
 }
 
-void encrypt(unsigned char * const ciphertext_hex,
-        const char * const nonce_hex,
-        const char * const message,
-        const int * const message_len)
+void encrypt(
+    unsigned char  *const nonce_ciphertext,
+    const char     *const nonce_hex,
+    const char     *const plaintext,
+    const uint16_t *const plaintext_len)
 {
     unsigned char  client_sk[crypto_box_SECRETKEYBYTES];
     unsigned char  server_pk[crypto_box_PUBLICKEYBYTES];
-    unsigned char  ciphertext[crypto_box_MACBYTES + *message_len];
-    unsigned char  nonce[crypto_box_NONCEBYTES];
-    int            ciphertext_len;
-    int            ciphertext_hex_len;
-    int            bin_len;
-    const char    *hex_end;
 
     struct randombytes_implementation impl = {
         SODIUM_C99(.implementation_name =) func_name,
@@ -140,23 +131,66 @@ void encrypt(unsigned char * const ciphertext_hex,
     sodium_memzero(client_sk, sizeof client_sk);
     sodium_memzero(server_pk, sizeof server_pk);
 
-    hex2bin(nonce, sizeof(nonce), nonce_hex, crypto_box_NONCEBYTES*2, NULL, &bin_len, &hex_end);
-    hex2bin(client_sk, sizeof(client_sk), CLIENT_SK_HEX, crypto_box_SECRETKEYBYTES*2, NULL, &bin_len, &hex_end);
-    hex2bin(server_pk, sizeof(client_sk), SERVER_PK_HEX, crypto_box_PUBLICKEYBYTES*2, NULL, &bin_len, &hex_end);
+    hex2bin(nonce_ciphertext, crypto_box_NONCEBYTES,
+            nonce_hex, crypto_box_NONCEBYTES*2,
+            NULL, NULL, NULL);
+    hex2bin(client_sk, crypto_box_SECRETKEYBYTES,
+            CLIENT_SK_HEX, crypto_box_SECRETKEYBYTES*2,
+            NULL, NULL, NULL);
+    hex2bin(server_pk, crypto_box_PUBLICKEYBYTES,
+            SERVER_PK_HEX, crypto_box_PUBLICKEYBYTES*2,
+            NULL, NULL, NULL);
 
+    // Encrypt plaintext and write into ciphertext
     crypto_box_primitive();
-
-    // Encrypt message and write into ciphertext
-    crypto_box_easy(ciphertext, (const unsigned char*)message, *message_len, nonce, server_pk, client_sk);
-
-    // Encode ciphertext and write into ciphertext_hex
-    ciphertext_len = sizeof(ciphertext);
-    ciphertext_hex_len = ciphertext_len*2 + 1;
-    bin2hex(ciphertext_hex, ciphertext_hex_len, ciphertext, ciphertext_len);
+    crypto_box_easy(nonce_ciphertext+crypto_box_NONCEBYTES, (const unsigned char *)plaintext, *plaintext_len, nonce_ciphertext, server_pk, client_sk);
 
     // Clear keys from memory
     sodium_memzero(client_sk, sizeof client_sk);
     sodium_memzero(server_pk, sizeof server_pk);
+}
+
+void sign(
+    unsigned char            *const signedtext_hex,
+    const unsigned char      *const nonce_ciphertext,
+    const unsigned long long *const nonce_ciphertext_len)
+{
+    unsigned char       client_ssk[crypto_sign_SECRETKEYBYTES];
+    unsigned char       signedtext[crypto_sign_BYTES + *nonce_ciphertext_len];
+    unsigned long long  signedtext_len = 0;
+    uint16_t            signedtext_hex_len;
+
+    Serial.printf("nonce + ciphertext is\n  ");
+    print_hex(nonce_ciphertext, *nonce_ciphertext_len);
+
+    struct randombytes_implementation impl = {
+        SODIUM_C99(.implementation_name =) func_name,
+        SODIUM_C99(.random =) NULL,
+        SODIUM_C99(.stir =) NULL,
+        SODIUM_C99(.uniform =) NULL,
+        SODIUM_C99(.buf =) func_random_buf,
+        SODIUM_C99(.close =) NULL,
+    };
+    randombytes_set_implementation(&impl);
+    sodium_init();
+
+    // Clear keys from memory
+    sodium_memzero(client_ssk, sizeof client_ssk);
+
+    // Read keys from hex
+    hex2bin(client_ssk, crypto_sign_SECRETKEYBYTES,
+            CLIENT_SSK_HEX, crypto_sign_SECRETKEYBYTES*2,
+            NULL, NULL, NULL);
+    // Sign nonce_ciphertext and write into signedtext
+    crypto_sign_primitive();
+    crypto_sign(signedtext, &signedtext_len, nonce_ciphertext, *nonce_ciphertext_len, client_ssk);
+
+    // Clear keys from memory
+    sodium_memzero(client_ssk, sizeof client_ssk);
+
+    // Encode signedtext and write into signedtext_hex
+    signedtext_hex_len = signedtext_len*2 + 1;
+    bin2hex(signedtext_hex, signedtext_hex_len, signedtext, signedtext_len);
 }
 
 // vim:fdm=syntax
