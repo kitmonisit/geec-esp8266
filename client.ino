@@ -3,6 +3,7 @@
 #include <sodium.h>
 
 #define HOST           "vast-lake-95491.herokuapp.com"
+#define HTTP_HOST      "http://vast-lake-95491.herokuapp.com"
 #define CLIENT_NAME    "node04_"
 #define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
@@ -74,7 +75,7 @@ static void request_nonce(void)
 
     http.setTimeout(TIMEOUT);
     Serial.print(F("[HTTP] begin ...\n"));
-    http.begin(String(HOST) + "/nonce");
+    http.begin(String(HTTP_HOST) + "/nonce");
 
     // Before executing GET, specify which headers to collect
     http.collectHeaders(headerkeys, headerkeyssize);
@@ -118,7 +119,7 @@ static void send_message(
 
     http.setReuse(false);
     Serial.print(F("[HTTP] begin ...\n"));
-    http.begin(String(HOST) + "/send_message");
+    http.begin(String(HTTP_HOST) + "/send_message");
     http.addHeader(F("Cookie"), cookie);
     // DONE: uint8_t nonce_bytes: Hex decode nonce_hex (24 bytes)
     // DONE: uint8_t server_pk_bytes: Hex decode SERVER_PK_HEX
