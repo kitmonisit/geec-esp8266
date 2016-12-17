@@ -37,15 +37,8 @@ void setup() {
     // stream_updates_to_cloud();
     // char *plaintext = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     stream_begin();
-    stream_add("The ");
-    stream_add("quick ");
-    stream_add("brown ");
-    stream_add("fox ");
-    stream_add("jumps ");
-    stream_add("over ");
-    stream_add("the ");
-    stream_add("lazy ");
-    stream_add("dog.");
+    stream_add("message1 ");
+    stream_add("message2");
     stream_end();
 }
 
