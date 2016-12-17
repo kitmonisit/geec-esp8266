@@ -9,9 +9,9 @@
 
 static HTTPClient http;
 
-static uint8_t httpCode;
-static char    cookie[156];
-static char    nonce_hex[crypto_box_NONCEBYTES*2 + 1];
+static uint16_t httpCode;
+static char     cookie[156];
+static char     nonce_hex[crypto_box_NONCEBYTES*2 + 1];
 
 void send_updates_to_cloud(const char *const plaintext)
 {
