@@ -19,7 +19,7 @@ static uint8_t  stream_msg = 0;
 
 void stream_updates_to_cloud(void)
 {
-    if (!client.connect(String(HOST), 80)) {
+    if (!client.connect(HOST, 80)) {
         Serial.println("connection failed");
     }
 
@@ -161,7 +161,7 @@ void stream_begin(void)
     // Need this for cookie
     request_nonce();
 
-    if (!client.connect(String(HOST), 80)) {
+    if (!client.connect(HOST, 80)) {
         Serial.println("connection failed");
     }
 
