@@ -1,8 +1,10 @@
 #include <ESP8266WiFi.h>
 #include "frozen.h" // JSON emitter and parser
 
-#define WIFI_SSID "."
+#define WIFI_SSID     "."
 #define WIFI_PASSWORD "."
+#define LED_RED       (uint8_t) 0
+#define LED_BLUE      (uint8_t) 2
 
 /*EspClass esp;*/
 
@@ -25,6 +27,11 @@ void connectToWiFi() {
 
 void setup() {
     Serial.begin(115200);
+
+    // Set up blue LED
+    pinMode(LED_BLUE, OUTPUT);
+    digitalWrite(LED_BLUE, HIGH);
+
     connectToWiFi();
     send_updates_to_cloud("The quick brown fox jumps over the lazy dog.");
 }

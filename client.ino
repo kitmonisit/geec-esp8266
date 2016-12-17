@@ -6,6 +6,7 @@
 #define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
 #define SERVER_PK_HEX  "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
+#define TIMEOUT        (uint16_t) 10000
 
 static HTTPClient http;
 
@@ -22,8 +23,10 @@ void send_updates_to_cloud(const char *const plaintext)
         plaintext_len++;
     }
 
+    digitalWrite(LED_BLUE, LOW);
     request_nonce();
     if (httpCode == HTTP_CODE_OK) send_message(cookie, plaintext, &plaintext_len);
+    digitalWrite(LED_BLUE, HIGH);
 }
 
 static void request_nonce(void)
@@ -31,6 +34,8 @@ static void request_nonce(void)
     const char *headerkeys[] = {"Set-Cookie"};
     const char  headerkeyssize = sizeof(headerkeys) / sizeof(char*);
 
+    http.setReuse(true);
+    http.setTimeout(TIMEOUT);
     Serial.print(F("[HTTP] begin ...\n"));
     http.begin(String(HOST) + "/nonce");
 
@@ -78,6 +83,7 @@ static void send_message(
         idx++;
     }
 
+    http.setReuse(false);
     Serial.print(F("[HTTP] begin ...\n"));
     http.begin(String(HOST) + "/send_message");
     http.addHeader("Cookie", cookie_str);
