@@ -9,6 +9,7 @@
 #define SERVER_PK_HEX  "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
 #define TIMEOUT        (uint16_t) 10000
 
+static WiFiClient client;
 static HTTPClient http;
 
 static uint16_t httpCode;
@@ -62,7 +63,7 @@ void send_updates_to_cloud(const char *const plaintext)
 
     digitalWrite(LED_BLUE, LOW);
     request_nonce();
-    if (httpCode == HTTP_CODE_OK) send_message(cookie, plaintext, &plaintext_len);
+    if (httpCode == HTTP_CODE_OK) send_message(plaintext, &plaintext_len);
     digitalWrite(LED_BLUE, HIGH);
 }
 
@@ -71,7 +72,6 @@ static void request_nonce(void)
     const char *headerkeys[] = {"Set-Cookie"};
     const char  headerkeyssize = sizeof(headerkeys) / sizeof(char*);
 
-    http.setReuse(true);
     http.setTimeout(TIMEOUT);
     Serial.print(F("[HTTP] begin ...\n"));
     http.begin(String(HOST) + "/nonce");
@@ -100,8 +100,47 @@ static void *process_cookie(String pre_cookie)
     pre_cookie.toCharArray(cookie, len_cookie);
 }
 
+void stream_begin(void)
+{
+    request_nonce();
+
+    String cookie_str;
+    int idx = 0;
+    while (*(cookie + idx) != '\0') {
+        cookie_str.concat((char) *(cookie + idx));
+        idx++;
+    }
+
+    if (!client.connect("192.168.22.4", 5000)) {
+        Serial.println("connection failed");
+    }
+
+    String url = "/stream";
+    String payload = String("POST ") + url + " HTTP/1.1\r\n"
+            + "Host: " + "192.168.22.4:5000" + "\r\n"
+            + "Connection: keep-alive\r\n"
+            + "Cookie: " + cookie_str + "\r\n"
+            + "Transfer-Encoding: chunked\r\n\r\n";
+    client.print(payload);
+}
+
+void stream_add(
+    String message)
+{
+    char message_len[7];
+    sprintf(message_len, "%X\r\n", message.length());
+    client.print(message_len);
+    message.concat('\r');
+    message.concat('\n');
+    client.print(message);
+}
+
+void stream_end(void) {
+    client.print("0\r\n");
+    client.print("\r\n");
+}
+
 static void send_message(
-    const char     *const cookie,
     const char     *const plaintext,
     const uint16_t *const plaintext_len)
 {
