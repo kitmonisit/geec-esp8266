@@ -86,7 +86,7 @@ static void send_message(
     http.setReuse(false);
     Serial.print(F("[HTTP] begin ...\n"));
     http.begin(String(HOST) + "/send_message");
-    http.addHeader("Cookie", cookie_str);
+    http.addHeader(F("Cookie"), cookie_str);
     // DONE: uint8_t nonce_bytes: Hex decode nonce_hex (24 bytes)
     // DONE: uint8_t server_pk_bytes: Hex decode SERVER_PK_HEX
     // DONE: uint8_t client_sk_bytes: Hex decode CLIENT_SK_HEX
