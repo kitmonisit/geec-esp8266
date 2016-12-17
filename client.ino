@@ -2,7 +2,7 @@
 #include <ESP8266HTTPClient.h>
 #include <sodium.h>
 
-#define HOST           "http://vast-lake-95491.herokuapp.com"
+#define HOST           "vast-lake-95491.herokuapp.com"
 #define CLIENT_NAME    "node04_"
 #define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
@@ -19,13 +19,13 @@ static uint8_t  stream_msg = 0;
 
 void stream_updates_to_cloud(void)
 {
-    if (!client.connect("192.168.22.4", 5000)) {
+    if (!client.connect(String(HOST), 80)) {
         Serial.println("connection failed");
     }
 
     String url = "/stream";
     String payload = String("POST ") + url + " HTTP/1.1\r\n"
-            + "Host: " + "192.168.22.4:5000" + "\r\n"
+            + "Host: " + HOST + "\r\n"
             + "Connection: keep-alive\r\n"
             + "Transfer-Encoding: chunked\r\n\r\n";
     Serial.println();
@@ -74,7 +74,7 @@ static void request_nonce(void)
 
     http.setTimeout(TIMEOUT);
     Serial.print(F("[HTTP] begin ...\n"));
-    http.begin(String("http://192.168.22.4:5000") + "/nonce");
+    http.begin(String(HOST) + "/nonce");
 
     // Before executing GET, specify which headers to collect
     http.collectHeaders(headerkeys, headerkeyssize);
@@ -161,13 +161,13 @@ void stream_begin(void)
     // Need this for cookie
     request_nonce();
 
-    if (!client.connect("192.168.22.4", 5000)) {
+    if (!client.connect(String(HOST), 80)) {
         Serial.println("connection failed");
     }
 
     String url = "/send_message";
     String payload = String("POST ") + url + " HTTP/1.1\r\n"
-            + "Host: " + "192.168.22.4:5000" + "\r\n"
+            + "Host: " + HOST + "\r\n"
             + "Connection: keep-alive\r\n"
             + "Cookie: " + cookie + "\r\n"
             + "Transfer-Encoding: chunked\r\n\r\n";
