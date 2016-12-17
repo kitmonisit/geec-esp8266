@@ -1,3 +1,4 @@
+#include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <sodium.h>
 
@@ -13,6 +14,42 @@ static HTTPClient http;
 static uint16_t httpCode;
 static char     cookie[156];
 static char     nonce_hex[crypto_box_NONCEBYTES*2 + 1];
+
+void stream_updates_to_cloud(void)
+{
+    WiFiClient client;
+    if (!client.connect("192.168.22.4", 5000)) {
+        Serial.println("connection failed");
+    }
+
+    String url = "/stream";
+    String payload = String("POST ") + url + " HTTP/1.1\r\n"
+            + "Host: " + "192.168.22.4:5000" + "\r\n"
+            + "Connection: keep-alive\r\n"
+            + "Transfer-Encoding: chunked\r\n\r\n";
+    Serial.println();
+    client.print(payload);
+    client.print("6\r\n");
+    client.print("hello \r\n");
+    client.print("6\r\n");
+    client.print("world \r\n");
+    client.print("7\r\n");
+    client.print("chunked\r\n");
+    client.print("0\r\n");
+    client.print("\r\n");
+    Serial.print(payload);
+
+    delay(2000);
+    Serial.print("response\n");
+    int buf_size = client.available();
+    uint8_t buf[buf_size];
+    client.read(buf, buf_size);
+    int idx = 0;
+    while(idx < buf_size) {
+        Serial.printf("%c", *(buf + idx));
+        idx++;
+    }
+}
 
 void send_updates_to_cloud(const char *const plaintext)
 {
@@ -122,6 +159,7 @@ static void send_message(
     http.end();
     Serial.print(F("[HTTP] end ...\n"));
 }
+
 
 // vim:fdm=syntax
 
