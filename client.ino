@@ -115,7 +115,7 @@ void stream_begin(void)
         Serial.println("connection failed");
     }
 
-    String url = "/stream";
+    String url = "/send_message";
     String payload = String("POST ") + url + " HTTP/1.1\r\n"
             + "Host: " + "192.168.22.4:5000" + "\r\n"
             + "Connection: keep-alive\r\n"
@@ -125,14 +125,45 @@ void stream_begin(void)
 }
 
 void stream_add(
-    String message)
+    const char *const plaintext)
 {
-    char message_len[7];
-    sprintf(message_len, "%X\r\n", message.length());
-    client.print(message_len);
-    message.concat('\r');
-    message.concat('\n');
-    client.print(message);
+    String payload = String(CLIENT_NAME);
+
+    char payload_len[7];
+    uint16_t idx = 0;
+    uint16_t plaintext_len = 0;
+
+    while (*(plaintext+plaintext_len) != '\0') {
+        plaintext_len++;
+    }
+
+    unsigned long long nonce_ciphertext_len =
+        crypto_box_NONCEBYTES
+        + crypto_box_MACBYTES
+        + plaintext_len;
+    unsigned char      nonce_ciphertext[nonce_ciphertext_len];
+    unsigned char      signedtext_hex[(crypto_sign_BYTES + nonce_ciphertext_len)*2 + 1];
+
+
+    Serial.printf("plaintext is\n  %s\n", plaintext);
+    // Encrypt
+    encrypt(nonce_ciphertext, nonce_hex, plaintext, &plaintext_len);
+    // Sign
+    sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
+    Serial.printf("signedtext is\n  %s\n", signedtext_hex);
+
+    idx = 0;
+    while (*(signedtext_hex + idx) != '\0') {
+        payload.concat((char) *(signedtext_hex + idx));
+        idx++;
+    }
+    sprintf(payload_len, "%0X\r\n", payload.length()+1);
+
+    client.print(payload_len);
+    payload.concat('\n');
+    payload.concat('\r');
+    payload.concat('\n');
+    client.print(payload);
 }
 
 void stream_end(void) {

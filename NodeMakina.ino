@@ -33,12 +33,20 @@ void setup() {
     digitalWrite(LED_BLUE, HIGH);
 
     connectToWiFi();
-    send_updates_to_cloud("The quick brown fox jumps over the lazy dog.");
+    // send_updates_to_cloud("The quick brown fox jumps over the lazy dog.");
     // stream_updates_to_cloud();
-    // stream_begin();
-    // stream_add("hello world\n");
-    // stream_add("message 2\n");
-    // stream_end();
+    // char *plaintext = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    stream_begin();
+    stream_add("The ");
+    stream_add("quick ");
+    stream_add("brown ");
+    stream_add("fox ");
+    stream_add("jumps ");
+    stream_add("over ");
+    stream_add("the ");
+    stream_add("lazy ");
+    stream_add("dog.");
+    stream_end();
 }
 
 void loop() {
