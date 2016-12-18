@@ -4,6 +4,10 @@
 
 #define HOST           "vast-lake-95491.herokuapp.com"
 #define HTTP_HOST      "http://vast-lake-95491.herokuapp.com"
+#define HTTP_PORT      80
+// #define HOST           "192.168.22.4"
+// #define HTTP_HOST      "http://192.168.22.4:5000"
+// #define HTTP_PORT   5000
 #define CLIENT_NAME    "node04_"
 #define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
@@ -13,15 +17,17 @@
 static WiFiClient client;
 static HTTPClient http;
 
-static uint16_t httpCode;
-static String   cookie;
-static char     nonce_hex[crypto_box_NONCEBYTES*2 + 1];
-static uint8_t  stream_msg = 0;
+static uint16_t      httpCode;
+static String        cookie;
+static unsigned char nonce[crypto_box_NONCEBYTES];
+static uint8_t       stream_msg = 0;
+
+void print_hex(const unsigned char *bin, const size_t bin_len);
 
 void stream_updates_to_cloud(void)
 {
-    if (!client.connect(HOST, 80)) {
-        Serial.println("connection failed");
+    if (!client.connect(HOST, HTTP_PORT)) {
+        Serial.println(F("connection failed"));
     }
 
     String url = "/stream";
@@ -42,7 +48,7 @@ void stream_updates_to_cloud(void)
     Serial.print(payload);
 
     delay(2000);
-    Serial.print("response\n");
+    Serial.print(F("response\n"));
     int buf_size = client.available();
     uint8_t buf[buf_size];
     client.read(buf, buf_size);
@@ -84,14 +90,15 @@ static void request_nonce(void)
     httpCode = http.GET();
     if (httpCode == HTTP_CODE_OK) {
         process_cookie(http.header("Set-Cookie"));
-        Serial.print("pre_cookie is ");
-        strcpy(nonce_hex, http.getString().c_str());
+        memcpy(nonce, http.getString().c_str(), crypto_box_NONCEBYTES);
         Serial.print(F("[HTTP] GET /nonce successful\n"));
-        Serial.printf("cookie is\n  ");
+        Serial.print(F("cookie is\n  "));
         Serial.println(cookie);
-        Serial.printf("nonce is\n  %s\n", nonce_hex);
+        Serial.print(F("nonce is\n  "));
+        print_hex(nonce, crypto_box_NONCEBYTES);
     } else {
-        Serial.printf("[HTTP] GET failed, error: %s\n", http.errorToString(httpCode).c_str());
+        Serial.print(F("[HTTP] GET failed, error: "));
+        Serial.printf("%s\n", http.errorToString(httpCode).c_str());
     }
     http.end();
     Serial.print(F("[HTTP] end ...\n"));
@@ -100,7 +107,6 @@ static void request_nonce(void)
 static void *process_cookie(String pre_cookie)
 {
     uint16_t len_cookie = (uint8_t) pre_cookie.indexOf(';', 0);
-    Serial.printf("len_cookie is %d\n", len_cookie);
     cookie = pre_cookie.substring(0, len_cookie);
     // pre_cookie.toCharArray(cookie, len_cookie);
 }
@@ -130,12 +136,14 @@ static void send_message(
     // DONE: uint8_t signedtext_hex: Hex encode (signedtext)
     // DONE: uint8_t full_message: client_signedtext_hex
 
-    Serial.printf("plaintext is\n  %s\n", plaintext);
+    Serial.print(F("plaintext is\n  "));
+    Serial.printf("%s\n", plaintext);
     // Encrypt
-    encrypt(nonce_ciphertext, nonce_hex, plaintext, plaintext_len);
+    encrypt(nonce_ciphertext, nonce, plaintext, plaintext_len);
     // Sign
     sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
-    Serial.printf("signedtext is\n  %s\n", signedtext_hex);
+    Serial.print(F("signedtext is\n  "));
+    Serial.printf("%s\n", signedtext_hex);
 
     idx = 0;
     while (*(signedtext_hex + idx) != '\0') {
@@ -149,9 +157,11 @@ static void send_message(
     if (httpCode == HTTP_CODE_OK) {
         response = http.getString();
         Serial.print(F("[HTTP] POST /send_message successful\n"));
-        Serial.printf("response from server is\n  %s\n", response.c_str());
+        Serial.print(F("response from server is\n  "));
+        Serial.println(response);
     } else {
-        Serial.printf("[HTTP] POST failed, error: %s\n", http.errorToString(httpCode).c_str());
+        Serial.print(F("[HTTP] POST failed, error: "));
+        Serial.printf("%s\n", http.errorToString(httpCode).c_str());
     }
     http.end();
     Serial.print(F("[HTTP] end ...\n"));
@@ -162,8 +172,8 @@ void stream_begin(void)
     // Need this for cookie
     request_nonce();
 
-    if (!client.connect(HOST, 80)) {
-        Serial.println("connection failed");
+    if (!client.connect(HOST, HTTP_PORT)) {
+        Serial.println(F("connection failed"));
     }
 
     String url = "/send_message";
@@ -173,7 +183,7 @@ void stream_begin(void)
             + "Cookie: " + cookie + "\r\n"
             + "Transfer-Encoding: chunked\r\n\r\n";
     client.print(payload);
-    Serial.println(F("stream_begin\n"));
+    Serial.println(F("stream_begin"));
 }
 
 void stream_add(
@@ -196,16 +206,20 @@ void stream_add(
     unsigned char      nonce_ciphertext[nonce_ciphertext_len];
     unsigned char      signedtext_hex[(crypto_sign_BYTES + nonce_ciphertext_len)*2 + 1];
 
-    Serial.printf("plaintext is\n  %s\n", plaintext);
+    Serial.print(F("plaintext is\n  "));
+    Serial.printf("%s\n", plaintext);
     // Encrypt
-    encrypt(nonce_ciphertext, nonce_hex, plaintext, &plaintext_len);
+    // TODO Add stream_msg to nonce
+    encrypt(nonce_ciphertext, nonce, plaintext, &plaintext_len);
     // Sign
     sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
-    Serial.printf("signedtext is\n  %s\n", signedtext_hex);
+    Serial.print(F("signedtext is\n  "));
+    Serial.printf("%s\n", signedtext_hex);
 
     idx = 0;
     if (stream_msg > 0) {
         payload = "";
+        idx = (crypto_sign_BYTES + crypto_box_NONCEBYTES)*2;
     }
     while (*(signedtext_hex + idx) != '\0') {
         payload.concat((char) *(signedtext_hex + idx));
@@ -214,10 +228,9 @@ void stream_add(
     sprintf(payload_len, "%0X\r\n", payload.length()+1);
 
     client.print(payload_len);
-    payload.concat('\n');
-    payload.concat('\r');
-    payload.concat('\n');
+    payload.concat("\n\r\n");
     client.print(payload);
+    Serial.print(payload);
     stream_msg++;
 }
 
@@ -235,7 +248,8 @@ void stream_end(
     uint8_t buf[buf_size];
     client.read(buf, buf_size);
     Serial.println();
-    int idx = 0;
+
+    uint16_t idx = 0;
     while(idx < buf_size) {
         Serial.printf("%c", *(buf + idx));
         idx++;

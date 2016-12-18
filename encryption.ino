@@ -97,7 +97,7 @@ hex2bin(unsigned char * const bin, const size_t bin_maxlen,
     return ret;
 }
 
-static void
+void
 print_hex(const unsigned char *bin, const size_t bin_len)
 {
     uint8_t       hex_size = bin_len*2 + 1;
@@ -108,10 +108,10 @@ print_hex(const unsigned char *bin, const size_t bin_len)
 }
 
 void encrypt(
-    unsigned char  *const nonce_ciphertext,
-    const char     *const nonce_hex,
-    const char     *const plaintext,
-    const uint16_t *const plaintext_len)
+    unsigned char       *const nonce_ciphertext,
+    const unsigned char *const nonce,
+    const char          *const plaintext,
+    const uint16_t      *const plaintext_len)
 {
     unsigned char  client_sk[crypto_box_SECRETKEYBYTES];
     unsigned char  server_pk[crypto_box_PUBLICKEYBYTES];
@@ -128,12 +128,14 @@ void encrypt(
     sodium_init();
 
     // Clear keys from memory
+    sodium_memzero(nonce_ciphertext,
+        crypto_box_NONCEBYTES
+        + crypto_box_MACBYTES
+        + *plaintext_len);
     sodium_memzero(client_sk, sizeof client_sk);
     sodium_memzero(server_pk, sizeof server_pk);
 
-    hex2bin(nonce_ciphertext, crypto_box_NONCEBYTES,
-            nonce_hex, crypto_box_NONCEBYTES*2,
-            NULL, NULL, NULL);
+    memcpy(nonce_ciphertext, nonce, crypto_box_NONCEBYTES);
     hex2bin(client_sk, crypto_box_SECRETKEYBYTES,
             CLIENT_SK_HEX, crypto_box_SECRETKEYBYTES*2,
             NULL, NULL, NULL);
@@ -160,7 +162,7 @@ void sign(
     unsigned long long  signedtext_len = 0;
     uint16_t            signedtext_hex_len;
 
-    Serial.printf("nonce + ciphertext is\n  ");
+    Serial.print(F("nonce + ciphertext is\n  "));
     print_hex(nonce_ciphertext, *nonce_ciphertext_len);
 
     struct randombytes_implementation impl = {
