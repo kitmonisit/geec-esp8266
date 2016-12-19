@@ -13,6 +13,7 @@
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
 #define SERVER_PK_HEX  "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
 #define TIMEOUT        (uint16_t) 10000
+#define MAX_PLAINTEXT_LEN 130
 
 static WiFiClient client;
 static HTTPClient http;
@@ -89,17 +90,25 @@ void stream_begin(void)
 }
 
 void stream_add(
-    const char *const plaintext)
+    const char *const input)
 {
+    // input must be limited to 128 bytes total including null terminator
     String payload;
 
     char payload_len[7];
     uint16_t idx = 0;
-    uint16_t plaintext_len = 0;
+    const uint8_t plaintext_len = MAX_PLAINTEXT_LEN;
+    char plaintext[plaintext_len] = {0};
 
-    while (*(plaintext+plaintext_len) != '\0') {
-        plaintext_len++;
+    // Prepend orig input length
+    idx = 0;
+    while (*(input+idx) != '\0') {
+        idx++;
     }
+    sprintf(plaintext, "%02X", idx);
+    idx = 0;
+    // Append input string
+    strcpy(plaintext+2, input);
 
     unsigned long long nonce_ciphertext_len =
         crypto_box_NONCEBYTES

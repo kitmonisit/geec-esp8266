@@ -111,7 +111,7 @@ void encrypt(
     unsigned char       *const nonce_ciphertext,
     const unsigned char *const nonce,
     const char          *const plaintext,
-    const uint16_t      *const plaintext_len)
+    const uint8_t       *const plaintext_len)
 {
     unsigned char  client_sk[crypto_box_SECRETKEYBYTES];
     unsigned char  server_pk[crypto_box_PUBLICKEYBYTES];
