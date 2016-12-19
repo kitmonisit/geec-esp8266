@@ -16,9 +16,7 @@
 #define MAX_PLAINTEXT_LEN 130
 
 static WiFiClient client;
-static HTTPClient http;
 
-static uint16_t      httpCode;
 static String        cookie;
 static unsigned char nonce[crypto_box_NONCEBYTES];
 static uint8_t       stream_msg = 0;
@@ -30,6 +28,9 @@ static void request_nonce(void)
 {
     const char *headerkeys[] = {"Set-Cookie"};
     const char  headerkeyssize = sizeof(headerkeys) / sizeof(char*);
+
+    HTTPClient http;
+    static uint16_t      httpCode;
 
     http.setTimeout(TIMEOUT);
     Serial.print(F("[HTTP] begin ...\n"));
@@ -164,15 +165,11 @@ void stream_end(
 
     Serial.print(F("\nresponse\n"));
     delay(5000);
-    int buf_size = client.available();
-    uint8_t buf[buf_size];
-    client.read(buf, buf_size);
     Serial.println();
-
-    uint16_t idx = 0;
-    while(idx < buf_size) {
-        Serial.printf("%c", *(buf + idx));
-        idx++;
+    uint8_t buf[2];
+    while (client.available()) {
+        client.read(buf, 1);
+        Serial.printf("%c", *buf);
     }
 }
 
