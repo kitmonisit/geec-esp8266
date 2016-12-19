@@ -72,6 +72,7 @@ static void *process_cookie(String pre_cookie)
 void stream_begin(void)
 {
     digitalWrite(LED_BLUE, LOW);
+
     // Need this for cookie
     request_nonce();
 

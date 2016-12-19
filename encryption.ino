@@ -97,7 +97,7 @@ hex2bin(unsigned char * const bin, const size_t bin_maxlen,
     return ret;
 }
 
-void
+static void
 print_hex(const unsigned char *bin, const size_t bin_len)
 {
     uint8_t       hex_size = bin_len*2 + 1;
@@ -115,17 +115,6 @@ void encrypt(
 {
     unsigned char  client_sk[crypto_box_SECRETKEYBYTES];
     unsigned char  server_pk[crypto_box_PUBLICKEYBYTES];
-
-    struct randombytes_implementation impl = {
-        SODIUM_C99(.implementation_name =) func_name,
-        SODIUM_C99(.random =) NULL,
-        SODIUM_C99(.stir =) NULL,
-        SODIUM_C99(.uniform =) NULL,
-        SODIUM_C99(.buf =) func_random_buf,
-        SODIUM_C99(.close =) NULL,
-    };
-    randombytes_set_implementation(&impl);
-    sodium_init();
 
     // Clear keys from memory
     sodium_memzero(nonce_ciphertext,
@@ -167,17 +156,6 @@ void sign(
 
     Serial.print(F("nonce + ciphertext is\n  "));
     print_hex(nonce_ciphertext, *nonce_ciphertext_len);
-
-    struct randombytes_implementation impl = {
-        SODIUM_C99(.implementation_name =) func_name,
-        SODIUM_C99(.random =) NULL,
-        SODIUM_C99(.stir =) NULL,
-        SODIUM_C99(.uniform =) NULL,
-        SODIUM_C99(.buf =) func_random_buf,
-        SODIUM_C99(.close =) NULL,
-    };
-    randombytes_set_implementation(&impl);
-    sodium_init();
 
     // Clear keys from memory
     sodium_memzero(client_ssk, sizeof client_ssk);

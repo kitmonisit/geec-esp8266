@@ -1,4 +1,5 @@
 #include <ESP8266WiFi.h>
+#include <sodium.h>
 #include "frozen.h" // JSON emitter and parser
 
 #define WIFI_SSID     "."
@@ -7,6 +8,18 @@
 #define LED_BLUE      (uint8_t) 2
 
 /*EspClass esp;*/
+
+static const char *func_name(void);
+static void        func_random_buf(void * const buf, const size_t size);
+
+static struct randombytes_implementation impl = {
+    SODIUM_C99(.implementation_name =) func_name,
+    SODIUM_C99(.random =) NULL,
+    SODIUM_C99(.stir =) NULL,
+    SODIUM_C99(.uniform =) NULL,
+    SODIUM_C99(.buf =) func_random_buf,
+    SODIUM_C99(.close =) NULL,
+};
 
 void connectToWiFi() {
     delay(10);
@@ -33,6 +46,14 @@ void setup() {
     digitalWrite(LED_BLUE, HIGH);
 
     connectToWiFi();
+
+    randombytes_set_implementation(&impl);
+    sodium_init();
+}
+
+void loop() {
+    delay(1000);
+    /*Serial.printf("%d free RAM\n", esp.getFreeHeap());*/
     stream_begin();
     stream_add("Bayang Magiliw,\n");
     stream_add("Perlas ng Silanganan\n");
@@ -59,11 +80,6 @@ void setup() {
     stream_add("Aming ligaya na pag may mang-aapi,\n");
     stream_add("Ang mamatay nang dahil sa iyo.\n");
     stream_end();
-}
-
-void loop() {
-    delay(1000);
-    /*Serial.printf("%d free RAM\n", esp.getFreeHeap());*/
 }
 
 // vim:fdm=syntax
