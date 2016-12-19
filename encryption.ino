@@ -135,15 +135,18 @@ void encrypt(
     sodium_memzero(client_sk, sizeof client_sk);
     sodium_memzero(server_pk, sizeof server_pk);
 
+    // prepend nonce
     memcpy(nonce_ciphertext, nonce, crypto_box_NONCEBYTES);
+    // client_sk: Hex decode CLIENT_SK_HEX
     hex2bin(client_sk, crypto_box_SECRETKEYBYTES,
             CLIENT_SK_HEX, crypto_box_SECRETKEYBYTES*2,
             NULL, NULL, NULL);
+    // server_pk: Hex decode SERVER_PK_HEX
     hex2bin(server_pk, crypto_box_PUBLICKEYBYTES,
             SERVER_PK_HEX, crypto_box_PUBLICKEYBYTES*2,
             NULL, NULL, NULL);
 
-    // Encrypt plaintext and write into ciphertext
+    // Encrypt plaintext and append to nonce
     crypto_box_primitive();
     crypto_box_easy(nonce_ciphertext+crypto_box_NONCEBYTES, (const unsigned char *)plaintext, *plaintext_len, nonce_ciphertext, server_pk, client_sk);
 
@@ -179,7 +182,7 @@ void sign(
     // Clear keys from memory
     sodium_memzero(client_ssk, sizeof client_ssk);
 
-    // Read keys from hex
+    // client_ssk: Hex decode CLIENT_SSK_HEX
     hex2bin(client_ssk, crypto_sign_SECRETKEYBYTES,
             CLIENT_SSK_HEX, crypto_sign_SECRETKEYBYTES*2,
             NULL, NULL, NULL);

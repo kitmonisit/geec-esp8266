@@ -24,56 +24,6 @@ static uint8_t       stream_msg = 0;
 
 void print_hex(const unsigned char *bin, const size_t bin_len);
 
-void stream_updates_to_cloud(void)
-{
-    if (!client.connect(HOST, HTTP_PORT)) {
-        Serial.println(F("connection failed"));
-    }
-
-    String url = "/stream";
-    String payload = String("POST ") + url + " HTTP/1.1\r\n"
-            + "Host: " + HOST + "\r\n"
-            + "Connection: keep-alive\r\n"
-            + "Transfer-Encoding: chunked\r\n\r\n";
-    Serial.println();
-    client.print(payload);
-    client.print("6\r\n");
-    client.print("hello \r\n");
-    client.print("6\r\n");
-    client.print("world \r\n");
-    client.print("7\r\n");
-    client.print("chunked\r\n");
-    client.print("0\r\n");
-    client.print("\r\n");
-    Serial.print(payload);
-
-    delay(2000);
-    Serial.print(F("response\n"));
-    int buf_size = client.available();
-    uint8_t buf[buf_size];
-    client.read(buf, buf_size);
-    int idx = 0;
-    while(idx < buf_size) {
-        Serial.printf("%c", *(buf + idx));
-        idx++;
-    }
-}
-
-void send_updates_to_cloud(const char *const plaintext)
-{
-    // Message length is limited to 512 characters
-
-    uint16_t plaintext_len = 0;
-    while (*(plaintext+plaintext_len) != '\0') {
-        plaintext_len++;
-    }
-
-    digitalWrite(LED_BLUE, LOW);
-    request_nonce();
-    if (httpCode == HTTP_CODE_OK) send_message(plaintext, &plaintext_len);
-    digitalWrite(LED_BLUE, HIGH);
-}
-
 static void request_nonce(void)
 {
     const char *headerkeys[] = {"Set-Cookie"};
@@ -108,67 +58,11 @@ static void *process_cookie(String pre_cookie)
 {
     uint16_t len_cookie = (uint8_t) pre_cookie.indexOf(';', 0);
     cookie = pre_cookie.substring(0, len_cookie);
-    // pre_cookie.toCharArray(cookie, len_cookie);
-}
-
-static void send_message(
-    const char     *const plaintext,
-    const uint16_t *const plaintext_len)
-{
-    unsigned long long nonce_ciphertext_len = crypto_box_NONCEBYTES + crypto_box_MACBYTES + *plaintext_len;
-    unsigned char      nonce_ciphertext[nonce_ciphertext_len];
-    unsigned char      signedtext_hex[(crypto_sign_BYTES + nonce_ciphertext_len)*2 + 1];
-
-    uint16_t idx = 0;
-    String payload = String(CLIENT_NAME);
-    String response;
-
-    http.setReuse(false);
-    Serial.print(F("[HTTP] begin ...\n"));
-    http.begin(String(HTTP_HOST) + "/send_message");
-    http.addHeader(F("Cookie"), cookie);
-    // DONE: uint8_t nonce_bytes: Hex decode nonce_hex (24 bytes)
-    // DONE: uint8_t server_pk_bytes: Hex decode SERVER_PK_HEX
-    // DONE: uint8_t client_sk_bytes: Hex decode CLIENT_SK_HEX
-    // DONE: uint8_t client_ssk_bytes: Hex decode CLIENT_SSK_HEX
-    // DONE: uint8_t ciphertext_bytes: Encrypt (plaintext, nonce_bytes, server_pk_bytes, client_sk_bytes)
-    // DONE: uint8_t signedtext: Sign (client_ssk_bytes, nonce_bytes + ciphertext_bytes)
-    // DONE: uint8_t signedtext_hex: Hex encode (signedtext)
-    // DONE: uint8_t full_message: client_signedtext_hex
-
-    Serial.print(F("plaintext is\n  "));
-    Serial.printf("%s\n", plaintext);
-    // Encrypt
-    encrypt(nonce_ciphertext, nonce, plaintext, plaintext_len);
-    // Sign
-    sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
-    Serial.print(F("signedtext is\n  "));
-    Serial.printf("%s\n", signedtext_hex);
-
-    idx = 0;
-    while (*(signedtext_hex + idx) != '\0') {
-        payload.concat((char) *(signedtext_hex + idx));
-        idx++;
-    }
-
-    Serial.println(F("[HTTP] POST /send_message"));
-    Serial.println(payload);
-    httpCode = http.POST(payload);
-    if (httpCode == HTTP_CODE_OK) {
-        response = http.getString();
-        Serial.print(F("[HTTP] POST /send_message successful\n"));
-        Serial.print(F("response from server is\n  "));
-        Serial.println(response);
-    } else {
-        Serial.print(F("[HTTP] POST failed, error: "));
-        Serial.printf("%s\n", http.errorToString(httpCode).c_str());
-    }
-    http.end();
-    Serial.print(F("[HTTP] end ...\n"));
 }
 
 void stream_begin(void)
 {
+    digitalWrite(LED_BLUE, LOW);
     // Need this for cookie
     request_nonce();
 
@@ -189,7 +83,7 @@ void stream_begin(void)
 void stream_add(
     const char *const plaintext)
 {
-    String payload = String(CLIENT_NAME);
+    String payload;
 
     char payload_len[7];
     uint16_t idx = 0;
@@ -216,9 +110,14 @@ void stream_add(
     Serial.print(F("signedtext is\n  "));
     Serial.printf("%s\n", signedtext_hex);
 
-    idx = 0;
-    if (stream_msg > 0) {
-        payload = "";
+    // payload: client_signedtext_hex
+    if (stream_msg == 0) {
+        // Prepend CLIENT_NAME
+        payload = String(CLIENT_NAME);
+        // Append everything
+        idx = 0;
+    } else {
+        // No need to send signature and nonce
         idx = (crypto_sign_BYTES + crypto_box_NONCEBYTES)*2;
     }
     while (*(signedtext_hex + idx) != '\0') {
@@ -241,6 +140,7 @@ void stream_end(
     client.print("\r\n");
     stream_msg = 0;
     Serial.print(F("stream_end\n"));
+    digitalWrite(LED_BLUE, HIGH);
 
     Serial.print(F("\nresponse\n"));
     delay(5000);
@@ -255,7 +155,6 @@ void stream_end(
         idx++;
     }
 }
-
 
 // vim:fdm=syntax
 

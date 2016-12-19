@@ -33,9 +33,6 @@ void setup() {
     digitalWrite(LED_BLUE, HIGH);
 
     connectToWiFi();
-    // send_updates_to_cloud("The quick brown fox jumps over the lazy dog.");
-    // stream_updates_to_cloud();
-    // char *plaintext = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     stream_begin();
     stream_add("message1 ");
     stream_add("message2");
