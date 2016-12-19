@@ -7,7 +7,7 @@
 #define HTTP_PORT      80
 // #define HOST           "192.168.22.4"
 // #define HTTP_HOST      "http://192.168.22.4:5000"
-// #define HTTP_PORT   5000
+// #define HTTP_PORT      5000
 #define CLIENT_NAME    "node04_"
 #define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
@@ -22,7 +22,8 @@ static String        cookie;
 static unsigned char nonce[crypto_box_NONCEBYTES];
 static uint8_t       stream_msg = 0;
 
-void print_hex(const unsigned char *bin, const size_t bin_len);
+static void func_random_buf(void * const buf, const size_t size);
+static void print_hex(const unsigned char *bin, const size_t bin_len);
 
 static void request_nonce(void)
 {
@@ -52,6 +53,13 @@ static void request_nonce(void)
     }
     http.end();
     Serial.print(F("[HTTP] end ...\n"));
+}
+
+static void generate_own_nonce()
+{
+    if (stream_msg > 0) {
+        func_random_buf(nonce, crypto_box_NONCEBYTES);
+    }
 }
 
 static void *process_cookie(String pre_cookie)
@@ -103,13 +111,15 @@ void stream_add(
     Serial.print(F("plaintext is\n  "));
     Serial.printf("%s\n", plaintext);
     // Encrypt
-    // TODO Add stream_msg to nonce
+    generate_own_nonce();
     encrypt(nonce_ciphertext, nonce, plaintext, &plaintext_len);
     // Sign
     sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
     Serial.print(F("signedtext is\n  "));
     Serial.printf("%s\n", signedtext_hex);
 
+    // Compose chunked data
+    // https://en.wikipedia.org/wiki/Chunked_transfer_encoding#Example
     // payload: client_signedtext_hex
     if (stream_msg == 0) {
         // Prepend CLIENT_NAME
@@ -117,8 +127,8 @@ void stream_add(
         // Append everything
         idx = 0;
     } else {
-        // No need to send signature and nonce
-        idx = (crypto_sign_BYTES + crypto_box_NONCEBYTES)*2;
+        // No need to send signature
+        idx = (crypto_sign_BYTES)*2;
     }
     while (*(signedtext_hex + idx) != '\0') {
         payload.concat((char) *(signedtext_hex + idx));
