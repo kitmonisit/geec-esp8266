@@ -40,7 +40,9 @@ static void request_nonce(void)
     http.collectHeaders(headerkeys, headerkeyssize);
 
     Serial.print(F("[HTTP] GET /nonce\n"));
-    httpCode = http.GET();
+    while (http.GET() != HTTP_CODE_OK);
+    httpCode = HTTP_CODE_OK;
+
     if (httpCode == HTTP_CODE_OK) {
         process_cookie(http.header("Set-Cookie"));
         memcpy(nonce, http.getString().c_str(), crypto_box_NONCEBYTES);
@@ -73,20 +75,17 @@ static void *process_cookie(String pre_cookie)
 void stream_begin(void)
 {
     digitalWrite(LED_BLUE, LOW);
-
-    // Need this for cookie
-    request_nonce();
-
-    if (!client.connect(HOST, HTTP_PORT)) {
-        Serial.println(F("connection failed"));
-    }
-
     String url = "/send_message";
     String payload = String("POST ") + url + " HTTP/1.1\r\n"
             + "Host: " + HOST + "\r\n"
             + "Connection: keep-alive\r\n"
             + "Cookie: " + cookie + "\r\n"
             + "Transfer-Encoding: chunked\r\n\r\n";
+
+    // Need this for cookie
+    request_nonce();
+
+    while (!client.connect(HOST, HTTP_PORT));
     client.print(payload);
     Serial.println(F("stream_begin"));
 }
