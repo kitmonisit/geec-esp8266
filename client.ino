@@ -168,7 +168,7 @@ void stream_add(
     client.print(payload_len);
     payload.concat("\n\r\n");
     client.print(payload);
-    Serial.print(payload);
+    /*Serial.print(payload);*/
     stream_msg++;
 }
 
