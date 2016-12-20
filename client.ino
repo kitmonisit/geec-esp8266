@@ -105,12 +105,7 @@ void stream_add(
     char plaintext[plaintext_len] = {0};
 
     // Prepend orig input length
-    idx = 0;
-    while (*(input+idx) != '\0') {
-        idx++;
-    }
-    sprintf(plaintext, "%02X", idx);
-    idx = 0;
+    sprintf(plaintext, "%02X", (uint8_t) strlen(input));
     // Append input string
     strcpy(plaintext+2, input);
 
@@ -127,16 +122,23 @@ void stream_add(
     generate_own_nonce();
     encrypt(nonce_ciphertext, nonce, plaintext, &plaintext_len);
     if (stream_msg != 0) {
+        if (stream_msg == 1) {
+            // Zero out the signature
+            memset(signedtext_hex, 0, crypto_sign_BYTES*2);
+        }
+        // Write the hex encoded value of the nonce_ciphertext into its designated portion
         bin2hex(
             signedtext_hex + (crypto_sign_BYTES)*2, nonce_ciphertext_len*2+1,
             nonce_ciphertext, nonce_ciphertext_len);
     }
+
     // Sign
     if (stream_msg == 0) {
+        // Sign only the first chunk
         sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
+        Serial.print(F("signedtext is\n  "));
+        Serial.printf("%s\n", signedtext_hex);
     }
-    Serial.print(F("signedtext is\n  "));
-    Serial.printf("%s\n", signedtext_hex);
 
     // Compose chunked data
     // https://en.wikipedia.org/wiki/Chunked_transfer_encoding#Example
@@ -147,7 +149,7 @@ void stream_add(
         // Append everything
         idx = 0;
     } else {
-        // No need to send signature
+        // No need to send signature portion
         idx = (crypto_sign_BYTES)*2;
     }
     while (*(signedtext_hex + idx) != '\0') {
@@ -177,6 +179,7 @@ void stream_end(
     Serial.println();
     uint8_t buf[2];
     while (client.available()) {
+        delay(10);
         client.read(buf, 1);
         Serial.printf("%c", *buf);
     }
