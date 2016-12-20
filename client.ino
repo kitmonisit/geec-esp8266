@@ -22,6 +22,8 @@ static unsigned char nonce[crypto_box_NONCEBYTES];
 static uint8_t       stream_msg = 0;
 
 static void func_random_buf(void * const buf, const size_t size);
+static void bin2hex(unsigned char * const hex, const size_t hex_maxlen,
+        const unsigned char * const bin, const size_t bin_len);
 static void print_hex(const unsigned char *bin, const size_t bin_len);
 
 static void request_nonce(void)
@@ -75,15 +77,16 @@ static void *process_cookie(String pre_cookie)
 void stream_begin(void)
 {
     digitalWrite(LED_BLUE, LOW);
+
+    // Need this for cookie
+    request_nonce();
+
     String url = "/send_message";
     String payload = String("POST ") + url + " HTTP/1.1\r\n"
             + "Host: " + HOST + "\r\n"
             + "Connection: keep-alive\r\n"
             + "Cookie: " + cookie + "\r\n"
             + "Transfer-Encoding: chunked\r\n\r\n";
-
-    // Need this for cookie
-    request_nonce();
 
     while (!client.connect(HOST, HTTP_PORT));
     client.print(payload);
@@ -123,8 +126,15 @@ void stream_add(
     // Encrypt
     generate_own_nonce();
     encrypt(nonce_ciphertext, nonce, plaintext, &plaintext_len);
+    if (stream_msg != 0) {
+        bin2hex(
+            signedtext_hex + (crypto_sign_BYTES)*2, nonce_ciphertext_len*2+1,
+            nonce_ciphertext, nonce_ciphertext_len);
+    }
     // Sign
-    sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
+    if (stream_msg == 0) {
+        sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
+    }
     Serial.print(F("signedtext is\n  "));
     Serial.printf("%s\n", signedtext_hex);
 
@@ -144,8 +154,8 @@ void stream_add(
         payload.concat((char) *(signedtext_hex + idx));
         idx++;
     }
-    sprintf(payload_len, "%0X\r\n", payload.length()+1);
 
+    sprintf(payload_len, "%0X\r\n", payload.length()+1);
     client.print(payload_len);
     payload.concat("\n\r\n");
     client.print(payload);
