@@ -24,6 +24,10 @@ static uint8_t       stream_msg = 0;
 static void func_random_buf(void * const buf, const size_t size);
 static void bin2hex(unsigned char * const hex, const size_t hex_maxlen,
         const unsigned char * const bin, const size_t bin_len);
+static int8_t hex2bin(unsigned char * const bin, const size_t bin_maxlen,
+        const char * const hex, const size_t hex_len,
+        const char * const ignore, int * const bin_len,
+        const char ** const hex_end);
 static void print_hex(const unsigned char *bin, const size_t bin_len);
 
 static void request_nonce(void)
@@ -47,7 +51,10 @@ static void request_nonce(void)
 
     if (httpCode == HTTP_CODE_OK) {
         process_cookie(http.header("Set-Cookie"));
-        memcpy(nonce, http.getString().c_str(), crypto_box_NONCEBYTES);
+        hex2bin(
+            nonce, crypto_box_NONCEBYTES,
+            http.getString().c_str(), crypto_box_NONCEBYTES*2 + 1,
+            NULL, NULL, NULL);
         Serial.print(F("[HTTP] GET /nonce successful\n"));
         Serial.print(F("cookie is\n  "));
         Serial.println(cookie);
