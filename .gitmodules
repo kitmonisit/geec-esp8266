@@ -4,3 +4,6 @@
 [submodule "lib/frozen"]
 	path = lib/frozen
 	url = https://github.com/kitmonisit/frozen.git
+[submodule "lib/TickerScheduler"]
+	path = lib/TickerScheduler
+	url = https://github.com/Toshik/TickerScheduler.git

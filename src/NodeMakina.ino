@@ -1,6 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <sodium.h>
-#include "frozen.h" // JSON emitter and parser
+#include <frozen.h> // JSON emitter and parser
 
 #define WIFI_SSID     "."
 #define WIFI_PASSWORD "."
