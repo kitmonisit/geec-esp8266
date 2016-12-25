@@ -1,15 +1,14 @@
 #include <ESP8266WiFi.h>
-#include <TickerScheduler.h>
-#include <sodium.h>
-#include <frozen.h> // JSON emitter and parser
+#include <TickerScheduler.h> // Scheduler
+#include <sodium.h>          // Encryption
+#include <frozen.h>          // JSON emitter and parser
 
 #define WIFI_SSID     "."
 #define WIFI_PASSWORD "."
 #define LED_RED       (uint8_t) 0
 #define LED_BLUE      (uint8_t) 2
 
-// EspClass esp;
-TickerScheduler ts(1);
+static TickerScheduler ts(1);
 
 static const char *func_name(void);
 static void        func_random_buf(void * const buf, const size_t size);
@@ -61,7 +60,6 @@ void setup() {
 
 void loop() {
     ts.update();
-    // Serial.printf("%d free RAM\n", esp.getFreeHeap());
 }
 
 // vim:fdm=syntax

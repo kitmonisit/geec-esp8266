@@ -1,3 +1,9 @@
+void routine_RAMCheck(void)
+{
+    EspClass esp;
+    Serial.printf("%d free RAM\n", esp.getFreeHeap());
+}
+
 void routine_LupangHinirang(void)
 {
     stream_begin();
@@ -27,3 +33,6 @@ void routine_LupangHinirang(void)
     stream_add("Ang mamatay nang dahil sa iyo.\n");
     stream_end();
 }
+
+// vim:fdm=syntax
+
