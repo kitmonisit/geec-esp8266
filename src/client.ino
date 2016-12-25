@@ -84,18 +84,15 @@ void stream_begin(void)
     // Need this for cookie
     request_nonce();
 
-    String url = "/send_message";
-    String payload = String("POST ") + url + " HTTP/1.1\r\n"
+    String payload = String("POST ") + "/send_message" + " HTTP/1.1\r\n"
             + "Host: " + HOST + "\r\n"
             + "Connection: close\r\n"
             + "Cookie: " + cookie + "\r\n"
             + "Transfer-Encoding: chunked\r\n\r\n";
 
-    Serial.printf("%d free RAM\n", esp.getFreeHeap());
     while (!client.connected()) {
         client.connect(HOST, HTTP_PORT);
     }
-    Serial.printf("%d free RAM\n", esp.getFreeHeap());
     client.print(payload);
 }
 
@@ -122,8 +119,6 @@ void stream_add(
     unsigned char      nonce_ciphertext[nonce_ciphertext_len];
     unsigned char      signedtext_hex[(crypto_sign_BYTES + nonce_ciphertext_len)*2 + 1];
 
-    Serial.print(F("Sending chunk "));
-    Serial.printf("%02d\n", stream_msg);
     // Encrypt
     generate_own_nonce();
     encrypt(nonce_ciphertext, nonce, plaintext, &plaintext_len);
@@ -165,6 +160,10 @@ void stream_add(
     client.print(payload_len);
     payload.concat("\n\r\n");
     client.print(payload);
+
+    Serial.print(F("stream_"));
+    Serial.printf("%02d\n", stream_msg);
+
     stream_msg++;
 }
 

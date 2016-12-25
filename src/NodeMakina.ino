@@ -7,7 +7,7 @@
 #define LED_RED       (uint8_t) 0
 #define LED_BLUE      (uint8_t) 2
 
-/*EspClass esp;*/
+// EspClass esp;
 
 static const char *func_name(void);
 static void        func_random_buf(void * const buf, const size_t size);
@@ -53,7 +53,7 @@ void setup() {
 
 void loop() {
     delay(1000);
-    /*Serial.printf("%d free RAM\n", esp.getFreeHeap());*/
+    // Serial.printf("%d free RAM\n", esp.getFreeHeap());
     stream_begin();
     stream_add("Bayang Magiliw,\n");
     stream_add("Perlas ng Silanganan\n");
