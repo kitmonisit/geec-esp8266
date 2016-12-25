@@ -154,9 +154,6 @@ void sign(
     unsigned long long  signedtext_len = 0;
     uint16_t            signedtext_hex_len;
 
-    Serial.print(F("nonce + ciphertext is\n  "));
-    print_hex(nonce_ciphertext, *nonce_ciphertext_len);
-
     // Clear keys from memory
     sodium_memzero(client_ssk, sizeof client_ssk);
 

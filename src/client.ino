@@ -42,20 +42,17 @@ static void process_cookie(const char *const pre_cookie)
 
 static void request_nonce(void)
 {
+    HTTPClient  http;
+    uint16_t    httpCode;
     const char *headerkeys[] = {"Set-Cookie"};
     const char  headerkeyssize = sizeof(headerkeys) / sizeof(char*);
 
-    HTTPClient http;
-    static uint16_t      httpCode;
-
     http.setTimeout(TIMEOUT);
-    Serial.print(F("[HTTP] begin ...\n"));
     http.begin(String(HTTP_HOST) + "/nonce");
 
     // Before executing GET, specify which headers to collect
     http.collectHeaders(headerkeys, headerkeyssize);
 
-    Serial.print(F("[HTTP] GET /nonce\n"));
     while (http.GET() != HTTP_CODE_OK);
     httpCode = HTTP_CODE_OK;
 
@@ -65,17 +62,11 @@ static void request_nonce(void)
             nonce, crypto_box_NONCEBYTES,
             http.getString().c_str(), crypto_box_NONCEBYTES*2 + 1,
             NULL, NULL, NULL);
-        Serial.print(F("[HTTP] GET /nonce successful\n"));
-        Serial.print(F("cookie is\n  "));
-        Serial.println(cookie);
-        Serial.print(F("nonce is\n  "));
-        print_hex(nonce, crypto_box_NONCEBYTES);
     } else {
         Serial.print(F("[HTTP] GET failed, error: "));
         Serial.printf("%s\n", http.errorToString(httpCode).c_str());
     }
     http.end();
-    Serial.print(F("[HTTP] end ...\n"));
 }
 
 static void generate_own_nonce()
@@ -131,8 +122,8 @@ void stream_add(
     unsigned char      nonce_ciphertext[nonce_ciphertext_len];
     unsigned char      signedtext_hex[(crypto_sign_BYTES + nonce_ciphertext_len)*2 + 1];
 
-    Serial.print(F("plaintext is\n  "));
-    Serial.printf("%s\n", plaintext);
+    Serial.print(F("Sending chunk "));
+    Serial.printf("%02d\n", stream_msg);
     // Encrypt
     generate_own_nonce();
     encrypt(nonce_ciphertext, nonce, plaintext, &plaintext_len);
@@ -151,8 +142,6 @@ void stream_add(
     if (stream_msg == 0) {
         // Sign only the first chunk
         sign(signedtext_hex, nonce_ciphertext, &nonce_ciphertext_len);
-        Serial.print(F("signedtext is\n  "));
-        Serial.printf("%s\n", signedtext_hex);
     }
 
     // Compose chunked data
@@ -176,7 +165,6 @@ void stream_add(
     client.print(payload_len);
     payload.concat("\n\r\n");
     client.print(payload);
-    /*Serial.print(payload);*/
     stream_msg++;
 }
 
