@@ -87,7 +87,7 @@ static void generate_own_nonce()
 
 void stream_begin(void)
 {
-    Serial.println(F("stream_begin"));
+    Serial.println(F("\n\nstream_begin"));
     digitalWrite(LED_BLUE, LOW);
     ensure_WiFi();
 
@@ -182,6 +182,9 @@ void stream_end(
     void)
 {
     ensure_WiFi();
+    uint8_t listen_attempts = 0;
+    uint8_t buf[2];
+
     client.print("0\r\n");
     client.print("\r\n");
     stream_msg = 0;
@@ -189,9 +192,15 @@ void stream_end(
     digitalWrite(LED_BLUE, HIGH);
 
     Serial.print(F("\nresponse\n"));
-    delay(5000);
+    while (!client.available()) {
+        delay(500);
+        listen_attempts++;
+        if (listen_attempts > 60) {
+            // 30 second timeout
+            return;
+        }
+    }
     Serial.println();
-    uint8_t buf[2];
     while (client.available()) {
         delay(10);
         client.read(buf, 1);
