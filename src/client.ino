@@ -17,7 +17,7 @@
 
 static WiFiClient client;
 
-static String        cookie;
+static char          cookie[198];
 static unsigned char nonce[crypto_box_NONCEBYTES];
 static uint8_t       stream_msg = 0;
 
@@ -30,10 +30,14 @@ static int8_t hex2bin(unsigned char * const bin, const size_t bin_maxlen,
         const char ** const hex_end);
 static void print_hex(const unsigned char *bin, const size_t bin_len);
 
-static void *process_cookie(String pre_cookie)
+static void process_cookie(const char *const pre_cookie)
 {
-    uint16_t len_cookie = (uint8_t) pre_cookie.indexOf(';', 0);
-    cookie = pre_cookie.substring(0, len_cookie);
+    uint16_t len_cookie = 0;
+    while (*(pre_cookie + len_cookie) != ';') {
+        len_cookie++;
+    }
+    strncpy(cookie, pre_cookie, len_cookie);
+    *(cookie + len_cookie) = '\0';
 }
 
 static void request_nonce(void)
@@ -56,7 +60,7 @@ static void request_nonce(void)
     httpCode = HTTP_CODE_OK;
 
     if (httpCode == HTTP_CODE_OK) {
-        process_cookie(http.header("Set-Cookie"));
+        process_cookie(http.header("Set-Cookie").c_str());
         hex2bin(
             nonce, crypto_box_NONCEBYTES,
             http.getString().c_str(), crypto_box_NONCEBYTES*2 + 1,
