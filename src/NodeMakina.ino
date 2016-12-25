@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <TickerScheduler.h> // Scheduler
 #include <sodium.h>          // Encryption
-#include <frozen.h>          // JSON emitter and parser
+#include <ArduinoJson.h>     // JSON emitter and parser
 
 #define WIFI_SSID     "."
 #define WIFI_PASSWORD "."

@@ -1,9 +1,0 @@
-[submodule "lib/ESP8266TrueRandom"]
-	path = lib/ESP8266TrueRandom
-	url = https://github.com/marvinroger/ESP8266TrueRandom.git
-[submodule "lib/frozen"]
-	path = lib/frozen
-	url = https://github.com/kitmonisit/frozen.git
-[submodule "lib/TickerScheduler"]
-	path = lib/TickerScheduler
-	url = https://github.com/Toshik/TickerScheduler.git
