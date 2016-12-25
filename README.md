@@ -1,12 +1,16 @@
+## Clone this project
+
+    $ git clone -b platformio --recursive https://gitlab.analog.com/CloudMakina/NodeMakina.git
+
 ## To build this project
 
-    make build
+    $ make build
 
 ## To upload
 
-    make upload
+    $ make upload
 
 ## To monitor serial
 
-    make serial
+    $ make serial
 
