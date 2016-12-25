@@ -23,6 +23,7 @@ static struct randombytes_implementation impl = {
 
 void connectToWiFi() {
     delay(10);
+    digitalWrite(LED_RED, LOW);
     Serial.print(F("\nConnecting to "));
     Serial.print(F(WIFI_SSID));
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -36,13 +37,16 @@ void connectToWiFi() {
     Serial.print(F("WiFi connected\n"));
     Serial.print(F("IP address: "));
     Serial.println(WiFi.localIP());
+    digitalWrite(LED_RED, HIGH);
 }
 
 void setup() {
     Serial.begin(115200);
 
     // Set up blue LED
+    pinMode(LED_RED, OUTPUT);
     pinMode(LED_BLUE, OUTPUT);
+    digitalWrite(LED_RED, HIGH);
     digitalWrite(LED_BLUE, HIGH);
 
     connectToWiFi();

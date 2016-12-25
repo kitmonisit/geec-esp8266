@@ -30,6 +30,15 @@ static int8_t hex2bin(unsigned char * const bin, const size_t bin_maxlen,
         const char ** const hex_end);
 static void print_hex(const unsigned char *bin, const size_t bin_len);
 
+static void ensure_WiFi(void)
+{
+    if (WiFi.status() != WL_CONNECTED) {
+        connectToWiFi();
+    } else {
+        return;
+    }
+}
+
 static void process_cookie(const char *const pre_cookie)
 {
     uint16_t len_cookie = 0;
@@ -80,6 +89,7 @@ void stream_begin(void)
 {
     Serial.println(F("stream_begin"));
     digitalWrite(LED_BLUE, LOW);
+    ensure_WiFi();
 
     // Need this for cookie
     request_nonce();
@@ -100,6 +110,7 @@ void stream_add(
     const char *const input)
 {
     // input must be limited to 128 bytes total including null terminator
+    ensure_WiFi();
     String payload;
 
     char payload_len[7];
@@ -170,6 +181,7 @@ void stream_add(
 void stream_end(
     void)
 {
+    ensure_WiFi();
     client.print("0\r\n");
     client.print("\r\n");
     stream_msg = 0;
