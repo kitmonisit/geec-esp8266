@@ -83,6 +83,7 @@ static void generate_own_nonce()
 
 void stream_begin(void)
 {
+    Serial.println(F("stream_begin"));
     digitalWrite(LED_BLUE, LOW);
 
     // Need this for cookie
@@ -91,13 +92,16 @@ void stream_begin(void)
     String url = "/send_message";
     String payload = String("POST ") + url + " HTTP/1.1\r\n"
             + "Host: " + HOST + "\r\n"
-            + "Connection: keep-alive\r\n"
+            + "Connection: close\r\n"
             + "Cookie: " + cookie + "\r\n"
             + "Transfer-Encoding: chunked\r\n\r\n";
 
-    while (!client.connect(HOST, HTTP_PORT));
+    Serial.printf("%d free RAM\n", esp.getFreeHeap());
+    while (!client.connected()) {
+        client.connect(HOST, HTTP_PORT);
+    }
+    Serial.printf("%d free RAM\n", esp.getFreeHeap());
     client.print(payload);
-    Serial.println(F("stream_begin"));
 }
 
 void stream_add(
