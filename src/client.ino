@@ -30,6 +30,12 @@ static int8_t hex2bin(unsigned char * const bin, const size_t bin_maxlen,
         const char ** const hex_end);
 static void print_hex(const unsigned char *bin, const size_t bin_len);
 
+static void *process_cookie(String pre_cookie)
+{
+    uint16_t len_cookie = (uint8_t) pre_cookie.indexOf(';', 0);
+    cookie = pre_cookie.substring(0, len_cookie);
+}
+
 static void request_nonce(void)
 {
     const char *headerkeys[] = {"Set-Cookie"};
@@ -73,12 +79,6 @@ static void generate_own_nonce()
     if (stream_msg > 0) {
         func_random_buf(nonce, crypto_box_NONCEBYTES);
     }
-}
-
-static void *process_cookie(String pre_cookie)
-{
-    uint16_t len_cookie = (uint8_t) pre_cookie.indexOf(';', 0);
-    cookie = pre_cookie.substring(0, len_cookie);
 }
 
 void stream_begin(void)
