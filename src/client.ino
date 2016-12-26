@@ -8,7 +8,7 @@
 // #define HOST           "192.168.22.4"
 // #define HTTP_HOST      "http://192.168.22.4:5000"
 // #define HTTP_PORT      5000
-#define CLIENT_NAME    "node04_"
+#define CLIENT_NAME    "node04"
 #define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
 #define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
 #define SERVER_PK_HEX  "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
@@ -155,7 +155,7 @@ void stream_add(
     // payload: client_signedtext_hex
     if (stream_msg == 0) {
         // Prepend CLIENT_NAME
-        payload = String(CLIENT_NAME);
+        payload = String(CLIENT_NAME) + "_";
         // Append everything
         idx = 0;
     } else {
@@ -176,6 +176,23 @@ void stream_add(
     Serial.printf("%02d\n", stream_msg);
 
     stream_msg++;
+}
+
+void stream_add_json(
+    const char *const query)
+{
+    uint8_t idx = 0;
+    char json_out[256];
+    handler_compose_json(query, json_out);
+
+    while (*(json_out + idx) != '\0') {
+        idx++;
+    }
+
+    *(json_out + idx) = '\n';
+    *(json_out + idx + 1) = '\0';
+
+    stream_add(json_out);
 }
 
 void stream_end(

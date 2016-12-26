@@ -34,5 +34,16 @@ void routine_LupangHinirang(void)
     stream_end();
 }
 
+void routine_HandlerQuery(void)
+{
+    stream_begin();
+    stream_add_json("Where");
+    stream_add_json("are");
+    stream_add_json("you");
+    stream_add_json("going");
+    stream_add_json("today");
+    stream_end();
+}
+
 // vim:fdm=syntax
 
