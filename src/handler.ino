@@ -29,3 +29,5 @@ void handler_compose_json(
     root.printTo(json_out, 256);
 }
 
+// vim:fdm=syntax
+

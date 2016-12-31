@@ -2,17 +2,17 @@
 #include <ESP8266HTTPClient.h>
 #include <sodium.h>
 
-#define HOST           "vast-lake-95491.herokuapp.com"
-#define HTTP_HOST      "http://vast-lake-95491.herokuapp.com"
-#define HTTP_PORT      80
-// #define HOST           "192.168.22.4"
-// #define HTTP_HOST      "http://192.168.22.4:5000"
-// #define HTTP_PORT      5000
-#define CLIENT_NAME    "node04"
-#define CLIENT_SK_HEX  "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
-#define CLIENT_SSK_HEX "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
-#define SERVER_PK_HEX  "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
-#define TIMEOUT        (uint16_t) 30000
+#define HOST              "vast-lake-95491.herokuapp.com"
+#define HTTP_HOST         "http://vast-lake-95491.herokuapp.com"
+#define HTTP_PORT         80
+// #define HOST              "192.168.22.4"
+// #define HTTP_HOST         "http://192.168.22.4:5000"
+// #define HTTP_PORT         5000
+#define CLIENT_NAME       "node04"
+#define CLIENT_SK_HEX     "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
+#define CLIENT_SSK_HEX    "cb89b7d0a4d65ed8a8207220035f63b74352e0203a275859f577ce3db33d563d8e4ff2eb2a744b71f5e4f6f389fbcecea33966a765a5c13a622f109b78dabdec"
+#define SERVER_PK_HEX     "5f8331082dc3f70428ac739a1a7981f911d7f0d3c0e0e583ad7f35c00faa141e"
+#define TIMEOUT           (uint16_t) 30000
 #define MAX_PLAINTEXT_LEN 130
 
 static WiFiClient client;
@@ -21,14 +21,22 @@ static char          cookie[198];
 static unsigned char nonce[crypto_box_NONCEBYTES];
 static uint8_t       stream_msg = 0;
 
-static void func_random_buf(void * const buf, const size_t size);
-static void bin2hex(unsigned char * const hex, const size_t hex_maxlen,
-        const unsigned char * const bin, const size_t bin_len);
-static int8_t hex2bin(unsigned char * const bin, const size_t bin_maxlen,
-        const char * const hex, const size_t hex_len,
-        const char * const ignore, int * const bin_len,
-        const char ** const hex_end);
-static void print_hex(const unsigned char *bin, const size_t bin_len);
+static void func_random_buf(
+          void   *const buf,
+    const size_t        size);
+static void bin2hex(
+          unsigned char *const hex,
+    const size_t               hex_maxlen,
+    const unsigned char *const bin,
+    const size_t               bin_len);
+static int8_t hex2bin(
+          unsigned char  *const bin,
+    const size_t                bin_maxlen,
+    const char           *const hex,
+    const size_t                hex_len,
+    const char           *const ignore,
+          int            *const bin_len,
+    const char          **const hex_end);
 
 static void ensure_WiFi(void)
 {
@@ -225,5 +233,5 @@ void stream_end(
     }
 }
 
-// vim:fdm=syntax
+// vim:fdm=syntax:nowrap
 
