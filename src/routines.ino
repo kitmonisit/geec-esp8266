@@ -34,7 +34,7 @@ void routine_LupangHinirang(void)
     stream_end();
 }
 
-void routine_HandlerQuery(void)
+void routine_HandlerQueryTest(void)
 {
     stream_begin();
     stream_add_json("Where");
@@ -42,6 +42,16 @@ void routine_HandlerQuery(void)
     stream_add_json("you");
     stream_add_json("going");
     stream_add_json("today");
+    stream_end();
+}
+
+void routine_HandlerQuery(void)
+{
+    stream_begin();
+    stream_add_json("CD");  // Handler ID request
+    stream_add_json("DT0"); // Request time since last power on
+    stream_add_json("DT2"); // Request time handler is waiting for operator
+    stream_add_json("DT7"); // Request time operator assists
     stream_end();
 }
 
