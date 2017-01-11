@@ -1,32 +1,37 @@
 #include <ArduinoJson.h>
 
+#define MAX_ATTEMPTS 10
 #define ASCII_STX 0x02
 #define ASCII_ETX 0x03
 #define ASCII_ENQ 0x05
 #define ASCII_ACK 0x06
 #define ASCII_CR  0x0D
 
-static void handler_enq(void)
+static uint8_t handler_enq(
+    void)
 {
-    char out[3] = {ASCII_ENQ, ASCII_CR, '\0'};
-    int inByte = 0;
+    char out[2] = {ASCII_ENQ, '\0'};
+    uint8_t attempts = 0;
+    uint8_t inByte = 0;
 
     while (inByte != ASCII_ACK) {
+        attempts++;
+        if (attempts > MAX_ATTEMPTS) {
+            return 0; // fail
+        }
         Serial.write(out);
         delay(100);
         if (Serial.available()) {
             inByte = Serial.read();
         }
     }
+    attempts = 0;
+    return 1; // success
 }
 
 static void handler_query(
-    const char *const query,
-          char *const response)
+    const char *const query)
 {
-    // Send ENQ to handler
-    handler_enq();
-
     // Compose query to handler
     char out[100];
     memset(out, '\0', sizeof(out));
@@ -37,18 +42,84 @@ static void handler_query(
 
     // Send query to handler
     Serial.write(out);
-
-    // Store response into response array
-    delay(500);
-    while (!Serial.available()) {
-        delay(500);
-    }
-    Serial.readBytes(response, Serial.available());
-
-    // The following line is just a placeholder
-    // sprintf(response, "%02d", rand() % 50);
 }
 
+static uint8_t handler_ack(
+    void)
+{
+    char out[2] = {ASCII_ACK, '\0'};
+    uint8_t attempts = 0;
+    uint8_t inByte = 0;
+
+    while (!Serial.available()) {
+        attempts++;
+        if (attempts > MAX_ATTEMPTS) {
+            return 0; // fail
+        }
+        delay(100);
+    }
+    attempts = 0;
+
+    if (Serial.available() > 0) {
+        while (inByte != ASCII_ENQ) {
+            attempts++;
+            if (attempts > MAX_ATTEMPTS) {
+                return 0; // fail
+            }
+            inByte = Serial.peek();
+        }
+        attempts = 0;
+        inByte = Serial.read();
+        Serial.write(out);
+        return 1; // success
+    }
+}
+
+static uint8_t handler_read(
+    char *const response)
+{
+    uint8_t idx = 0;
+    char pre_read = '\0';
+
+    while (!Serial.available()) {
+        delay(100);
+    }
+
+    while (Serial.available() > 0) {
+        if (Serial.peek() == ASCII_STX) {
+            Serial.read();
+        } else if (Serial.peek() == ASCII_ETX) {
+            Serial.read();
+            break;
+        } else {
+            *(response + idx) = (char) Serial.read();
+            idx++;
+        }
+    }
+    Serial.println(response);
+    Serial.flush();
+    return 1; // success
+}
+
+static uint8_t handler_query_sequence(
+    const char *const query,
+          char *const response)
+{
+    if (handler_enq()) {
+        handler_query(query);
+        if (handler_ack()) {
+            return handler_read(response);
+        } else {
+            Serial.println("FAIL handler_ack");
+            Serial.flush();
+            return 0; // fail
+        }
+    } else {
+        Serial.println("FAIL handler_enq");
+        Serial.flush();
+        return 0; // fail
+    }
+}
 
 void handler_compose_json(
     const char *const query,
@@ -58,7 +129,7 @@ void handler_compose_json(
     char response[256];
     memset(response, '\0', sizeof(response));
 
-    handler_query(query, response);
+    handler_query_sequence(query, response);
 
     JsonObject& root = jsonBuffer.createObject();
     root["client"] = CLIENT_NAME;
