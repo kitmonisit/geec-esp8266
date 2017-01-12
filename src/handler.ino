@@ -7,12 +7,30 @@
 #define ASCII_ACK 0x06
 #define ASCII_CR  0x0D
 
+static void buf_clear(
+    void)
+{
+    delay(1000);
+    while (Serial.available() > 0) {
+        Serial.read();
+    }
+}
+
+static void buf_wait(
+    void)
+{
+    while(!Serial.available());
+    return;
+}
+
 static uint8_t handler_enq(
     void)
 {
     char out[2] = {ASCII_ENQ, '\0'};
     uint8_t attempts = 0;
     uint8_t inByte = 0;
+
+    buf_clear();
 
     while (inByte != ASCII_ACK) {
         attempts++;
@@ -32,46 +50,36 @@ static uint8_t handler_enq(
 static void handler_query(
     const char *const query)
 {
-    // Compose query to handler
     char out[100];
+    uint8_t buf_contents = 0;
     memset(out, '\0', sizeof(out));
 
     *out = ASCII_STX;
     strcpy(out + 1, query);
     *(out + 1 + strlen(query)) = ASCII_ETX;
 
-    // Send query to handler
     Serial.write(out);
+    buf_wait();
+
+    return;
 }
 
 static uint8_t handler_ack(
     void)
 {
     char out[2] = {ASCII_ACK, '\0'};
-    uint8_t attempts = 0;
     uint8_t inByte = 0;
 
-    while (!Serial.available()) {
-        attempts++;
-        if (attempts > MAX_ATTEMPTS) {
-            return 0; // fail
-        }
-        delay(100);
-    }
-    attempts = 0;
+    buf_wait();
 
     if (Serial.available() > 0) {
         while (inByte != ASCII_ENQ) {
-            attempts++;
-            if (attempts > MAX_ATTEMPTS) {
-                return 0; // fail
-            }
-            inByte = Serial.peek();
+            inByte = Serial.read();
         }
-        attempts = 0;
-        inByte = Serial.read();
         Serial.write(out);
         return 1; // success
+    } else {
+        return 0; // fail
     }
 }
 
@@ -79,13 +87,10 @@ static uint8_t handler_read(
     char *const response)
 {
     uint8_t idx = 0;
-    char pre_read = '\0';
 
-    while (!Serial.available()) {
-        delay(100);
-    }
+    buf_wait();
 
-    while (Serial.available() > 0) {
+    while (1) {
         if (Serial.peek() == ASCII_STX) {
             Serial.read();
         } else if (Serial.peek() == ASCII_ETX) {
@@ -96,8 +101,7 @@ static uint8_t handler_read(
             idx++;
         }
     }
-    Serial.println(response);
-    Serial.flush();
+
     return 1; // success
 }
 
@@ -108,15 +112,20 @@ static uint8_t handler_query_sequence(
     if (handler_enq()) {
         handler_query(query);
         if (handler_ack()) {
-            return handler_read(response);
+            handler_read(response);
+            handler_ack();
+            Serial.println(response);
+            buf_clear();
         } else {
             Serial.println("FAIL handler_ack");
-            Serial.flush();
+            buf_clear();
+            sprintf(response, "FAIL handler ack");
             return 0; // fail
         }
     } else {
         Serial.println("FAIL handler_enq");
-        Serial.flush();
+        buf_clear();
+        sprintf(response, "FAIL handler_enq");
         return 0; // fail
     }
 }
