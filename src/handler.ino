@@ -51,7 +51,6 @@ static void handler_query(
     const char *const query)
 {
     char out[100];
-    uint8_t buf_contents = 0;
     memset(out, '\0', sizeof(out));
 
     *out = ASCII_STX;
