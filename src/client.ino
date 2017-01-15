@@ -5,8 +5,8 @@
 #define HOST              "vast-lake-95491.herokuapp.com"
 #define HTTP_HOST         "http://vast-lake-95491.herokuapp.com"
 #define HTTP_PORT         80
-// #define HOST              "192.168.22.4"
-// #define HTTP_HOST         "http://192.168.22.4:5000"
+// #define HOST              "192.168.22.5"
+// #define HTTP_HOST         "http://192.168.22.5:5000"
 // #define HTTP_PORT         5000
 #define CLIENT_NAME       "node04"
 #define CLIENT_SK_HEX     "f0a6bd567547b1f2905b0bc0d7db4d903084d6d3883616ff1086f3b219743a14"
@@ -227,7 +227,7 @@ void stream_end(
     }
     Serial.println();
     while (client.available()) {
-        delay(10);
+        delay(1);
         client.read(buf, 1);
         Serial.printf("%c", *buf);
     }

@@ -34,6 +34,16 @@ void routine_LupangHinirang(void)
     stream_end();
 }
 
+void routine_HandlerQuery(void)
+{
+    stream_begin();
+    stream_add_json("CD");  // Handler ID request
+    stream_add_json("DT0"); // Request time since last power on
+    stream_add_json("DT2"); // Request time handler is waiting for operator
+    stream_add_json("DT7"); // Request time operator assists
+    stream_end();
+}
+
 void routine_HandlerQueryTest(void)
 {
     stream_begin();
@@ -45,15 +55,13 @@ void routine_HandlerQueryTest(void)
     stream_end();
 }
 
-void routine_HandlerQuery(void)
+void routine_UptimeTest(void)
 {
     stream_begin();
-    stream_add_json("CD");  // Handler ID request
-    stream_add_json("DT0"); // Request time since last power on
-    stream_add_json("DT2"); // Request time handler is waiting for operator
-    stream_add_json("DT7"); // Request time operator assists
+    stream_add_json("uptime_test");
     stream_end();
 }
+
 
 // vim:fdm=syntax
 
