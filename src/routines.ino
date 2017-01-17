@@ -44,6 +44,14 @@ void routine_HandlerQuery(void)
     stream_end();
 }
 
+void routine_HandlerMUBA(void)
+{
+    stream_begin();
+    stream_add_json("DM0"); // Read number of sorted ICs total
+    stream_add_json("DM8"); // Read number of jams total
+    stream_end();
+}
+
 void routine_HandlerQueryTest(void)
 {
     stream_begin();
@@ -62,6 +70,18 @@ void routine_UptimeTest(void)
     stream_end();
 }
 
+// Favorite queries
+// DM0 Read number of sorted ICs total
+// DM8 Read number of jams total
+// DT7 Read "operator assist time"
+// CK  Handler status request
+// CKS Handler status request
+// DD  Read error message line
+// CB  Actual temperature value for a control loop
+
+// MUBA
+// Mean Units Between Assists
+// MUBA = DM0 / DM8
 
 // vim:fdm=syntax
 
