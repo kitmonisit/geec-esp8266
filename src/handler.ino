@@ -141,6 +141,7 @@ void handler_compose_json(
 
     JsonObject& root = jsonBuffer.createObject();
     root["client"] = CLIENT_NAME;
+    root["table"] = query;
     root["query"] = query;
     root["response"] = response;
 

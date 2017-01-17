@@ -66,7 +66,7 @@ void routine_HandlerQueryTest(void)
 void routine_UptimeTest(void)
 {
     stream_begin();
-    stream_add_json("uptime_test");
+    stream_add_json("uptime");
     stream_end();
 }
 
