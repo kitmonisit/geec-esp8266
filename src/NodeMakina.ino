@@ -42,7 +42,7 @@ void connectToWiFi() {
 }
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
 
     // Set up blue LED
     pinMode(LED_RED, OUTPUT);
@@ -55,7 +55,7 @@ void setup() {
     randombytes_set_implementation(&impl);
     sodium_init();
 
-    ts.add(0, 15*60*1000, routine_UptimeTest);
+    ts.add(0, 1000, routine_HandlerQuery);
 }
 
 void loop() {
