@@ -5,6 +5,7 @@
 #define ASCII_ETX 0x03
 #define ASCII_ENQ 0x05
 #define ASCII_ACK 0x06
+#define ASCII_LF  0x0A
 #define ASCII_CR  0x0D
 
 static void buf_clear(
@@ -17,9 +18,16 @@ static void buf_clear(
 }
 
 static void buf_wait(
-    void)
+    uint8_t seconds = 10)
 {
-    while(!Serial.available());
+    uint8_t idx;
+    while (!Serial.available()) {
+        if (idx > seconds-1) {
+            delay(100);
+            break;
+        }
+        idx++;
+    }
     return;
 }
 
@@ -31,7 +39,6 @@ static uint8_t handler_enq(
     uint8_t inByte = 0;
 
     buf_clear();
-
     while (inByte != ASCII_ACK) {
         attempts++;
         if (attempts > MAX_ATTEMPTS) {
@@ -43,7 +50,7 @@ static uint8_t handler_enq(
             inByte = Serial.read();
         }
     }
-    attempts = 0;
+    buf_clear();
     return 1; // success
 }
 
@@ -58,9 +65,6 @@ static void handler_query(
     *(out + 1 + strlen(query)) = ASCII_ETX;
 
     Serial.write(out);
-    buf_wait();
-
-    return;
 }
 
 static uint8_t handler_ack(
@@ -70,11 +74,8 @@ static uint8_t handler_ack(
     uint8_t inByte = 0;
 
     buf_wait();
-
-    if (Serial.available() > 0) {
-        while (inByte != ASCII_ENQ) {
-            inByte = Serial.read();
-        }
+    inByte = Serial.read();
+    if (inByte == ASCII_ENQ) {
         Serial.write(out);
         return 1; // success
     } else {
@@ -85,20 +86,21 @@ static uint8_t handler_ack(
 static uint8_t handler_read(
     char *const response)
 {
+    char inByte;
     uint8_t idx = 0;
 
     buf_wait();
-
-    while (1) {
-        if (Serial.peek() == ASCII_STX) {
-            Serial.read();
-        } else if (Serial.peek() == ASCII_ETX) {
-            Serial.read();
+    while (Serial.available()) {
+        inByte = (char) Serial.read();
+        if (inByte == ASCII_STX || inByte == ASCII_CR || inByte == ASCII_LF) {
+        } else if (inByte == ASCII_ETX) {
+            *(response + idx) = '\0';
             break;
         } else {
-            *(response + idx) = (char) Serial.read();
+            *(response + idx) = inByte;
             idx++;
         }
+        buf_wait();
     }
 
     return 1; // success
@@ -113,7 +115,6 @@ static uint8_t handler_query_sequence(
         if (handler_ack()) {
             handler_read(response);
             handler_ack();
-            Serial.println(response);
             buf_clear();
         } else {
             Serial.println("FAIL handler_ack");
