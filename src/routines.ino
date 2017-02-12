@@ -73,7 +73,7 @@ void routine_UptimeTest(void)
 void routine_Demo(void)
 {
     stream_begin();
-    stream_add_json("CD");
+    stream_add_json("CDA");
     stream_end();
 }
 
@@ -91,4 +91,3 @@ void routine_Demo(void)
 // MUBA = DM0 / DM8
 
 // vim:fdm=syntax
-
