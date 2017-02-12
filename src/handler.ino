@@ -106,26 +106,6 @@ static uint8_t handler_read(
     return 1; // success
 }
 
-
-
-static uint8_t handler_read1(
-    char *const response)
-{
-
-      char byteRead;
-
-    int availableBytes = Serial.available();
-    for(int i=0; i<availableBytes; i++)
-    {
-     response[i] = Serial.read();
-     response[i+1] = '\0'; // Append a null
-    }
-    Serial.println(response);
-    return 1; // success
-}
-
-
-
 static uint8_t handler_query_sequence(
     const char *const query,
           char *const response)
@@ -134,7 +114,6 @@ static uint8_t handler_query_sequence(
         handler_query(query);
         if (handler_ack()) {
             handler_read(response);
-            //Serial.print("response");Serial.println(response);
             handler_ack();
             buf_clear();
         } else {
@@ -156,8 +135,7 @@ void handler_compose_json(
           char *const json_out)
 {
     StaticJsonBuffer<256> jsonBuffer;
-    char response[255];
-    char id[7]=  {0x49,0x44,0x30,0x30,0x30,0x31,'\0'};
+    char response[256];
     memset(response, '\0', sizeof(response));
 
     handler_query_sequence(query, response);
@@ -165,9 +143,7 @@ void handler_compose_json(
     JsonObject& root = jsonBuffer.createObject();
     root["table"] = "demo";
     root["client"] = CLIENT_NAME;
-    root["handler_id"] = response;
-    //Serial.print("response");
-    //Serial.println(response);
+    root["handler_id"] = "ID0001";
     sensors_event_t event;
     dht.temperature().getEvent(&event);
     if (isnan(event.temperature)) {
