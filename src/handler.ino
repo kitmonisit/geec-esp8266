@@ -138,13 +138,14 @@ void handler_compose_json(
     char response[256];
     memset(response, '\0', sizeof(response));
 
-    handler_query_sequence(query, response);
+    // handler_query_sequence(query, response);
 
     JsonObject& root = jsonBuffer.createObject();
+    root["table"] = "demo";
     root["client"] = CLIENT_NAME;
-    root["table"] = query;
-    root["query"] = query;
-    root["response"] = response;
+    root["handler_id"] = "HANDLER00001";
+    root["temperature"] = 25.0;
+    root["humidity"] = 80.0;
 
     root.printTo(json_out, 256);
 }

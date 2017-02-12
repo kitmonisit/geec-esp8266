@@ -55,7 +55,7 @@ void setup() {
     randombytes_set_implementation(&impl);
     sodium_init();
 
-    ts.add(0, 1000, routine_HandlerQuery);
+    ts.add(0, 1000, routine_Demo);
 }
 
 void loop() {

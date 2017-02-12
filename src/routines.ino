@@ -70,6 +70,13 @@ void routine_UptimeTest(void)
     stream_end();
 }
 
+void routine_Demo(void)
+{
+    stream_begin();
+    stream_add_json("CD");
+    stream_end();
+}
+
 // Favorite queries
 // DM0 Read number of sorted ICs total
 // DM8 Read number of jams total
