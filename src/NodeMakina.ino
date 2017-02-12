@@ -3,21 +3,11 @@
 #include <sodium.h>          // Encryption
 #include <ArduinoJson.h>     // JSON emitter and parser
 
-/////TEMP & HUMIDITY SENSOR SETUP
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
-#include <DHT_U.h>
-#define DHTTYPE           DHT22     // DHT 22 (AM2302)
-#define DHTPIN            14         // Pin which is connected to the DHT sensor.
-DHT_Unified dht(DHTPIN, DHTTYPE);
-
-
 #define WIFI_SSID     "."
 #define WIFI_PASSWORD "."
 #define LED_RED       (uint8_t) 0
 #define LED_BLUE      (uint8_t) 2
 
-uint32_t delayMS;
 static TickerScheduler ts(1);
 
 static const char *func_name(void);
@@ -53,15 +43,14 @@ void connectToWiFi() {
 
 void setup() {
     Serial.begin(9600);
-    dht.begin();
-    sensor_t sensor;
-    delayMS = sensor.min_delay / 1000;
+
     // Set up blue LED
     pinMode(LED_RED, OUTPUT);
     pinMode(LED_BLUE, OUTPUT);
     digitalWrite(LED_RED, HIGH);
     digitalWrite(LED_BLUE, HIGH);
 
+    environment_setup();
     connectToWiFi();
 
     randombytes_set_implementation(&impl);
@@ -75,3 +64,4 @@ void loop() {
 }
 
 // vim:fdm=syntax
+

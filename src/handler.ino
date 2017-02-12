@@ -144,24 +144,11 @@ void handler_compose_json(
     root["table"] = "demo";
     root["client"] = CLIENT_NAME;
     root["handler_id"] = "ID0001";
-    sensors_event_t event;
-    dht.temperature().getEvent(&event);
-    if (isnan(event.temperature)) {
-        root["temperature"] = 0;
-    }
+    root["temperature"] = environment_temperature();
+    root["humidity"] = environment_humidity();
 
-    else {
-      root["temperature"] = event.temperature;
-    }
-
-    dht.humidity().getEvent(&event);
-    if (isnan(event.relative_humidity)) {
-        root["humidity"] = 0;
-    }
-    else {
-        root["humidity"] = event.relative_humidity;
-    }
     root.printTo(json_out, 256);
 }
 
 // vim:fdm=syntax
+
