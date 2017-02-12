@@ -117,13 +117,13 @@ static uint8_t handler_query_sequence(
             handler_ack();
             buf_clear();
         } else {
-            Serial.println("FAIL handler_ack");
+            // Serial.println("FAIL handler_ack");
             buf_clear();
             sprintf(response, "FAIL handler ack");
             return 0; // fail
         }
     } else {
-        Serial.println("FAIL handler_enq");
+        // Serial.println("FAIL handler_enq");
         buf_clear();
         sprintf(response, "FAIL handler_enq");
         return 0; // fail

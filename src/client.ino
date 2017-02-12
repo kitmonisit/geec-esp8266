@@ -95,7 +95,7 @@ static void generate_own_nonce()
 
 void stream_begin(void)
 {
-    Serial.println(F("\n\nstream_begin"));
+    // Serial.println(F("\n\nstream_begin"));
     digitalWrite(LED_BLUE, LOW);
     ensure_WiFi();
 
@@ -180,8 +180,8 @@ void stream_add(
     payload.concat("\n\r\n");
     client.print(payload);
 
-    Serial.print(F("stream_"));
-    Serial.printf("%02d\n", stream_msg);
+    // Serial.print(F("stream_"));
+    // Serial.printf("%02d\n", stream_msg);
 
     stream_msg++;
 }
@@ -213,10 +213,10 @@ void stream_end(
     client.print("0\r\n");
     client.print("\r\n");
     stream_msg = 0;
-    Serial.print(F("stream_end\n"));
+    // Serial.print(F("stream_end\n"));
     digitalWrite(LED_BLUE, HIGH);
 
-    Serial.print(F("\nresponse\n"));
+    // Serial.print(F("\nresponse\n"));
     while (!client.available()) {
         delay(500);
         listen_attempts++;
@@ -225,11 +225,11 @@ void stream_end(
             return;
         }
     }
-    Serial.println();
+    // Serial.println();
     while (client.available()) {
         delay(1);
         client.read(buf, 1);
-        Serial.printf("%c", *buf);
+        // Serial.printf("%c", *buf);
     }
 }
 

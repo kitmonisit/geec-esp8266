@@ -104,7 +104,7 @@ print_hex(const unsigned char *bin, const size_t bin_len)
     unsigned char hex[hex_size];
 
     bin2hex(hex, hex_size, bin, bin_len);
-    Serial.printf("%s\n", hex);
+    // Serial.printf("%s\n", hex);
 }
 
 void encrypt(
