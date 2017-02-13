@@ -26,7 +26,7 @@ void connectToWiFi() {
     delay(10);
     digitalWrite(LED_RED, LOW);
     Serial.print(F("\nConnecting to "));
-    Serial.print(F(WIFI_SSID));
+    Serial.print(F("WiFi"));
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     while (WiFi.status() != WL_CONNECTED) {
