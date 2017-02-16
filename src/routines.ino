@@ -77,6 +77,17 @@ void routine_Demo(void)
     stream_end();
 }
 
+void routine_HandlerEmulate(void)
+{
+    char response[256];
+    memset(response, '\0', sizeof(response));
+
+    digitalWrite(LED_BLUE, LOW);
+    handler_query_sequence("CDA", response);
+    Serial.println(response);
+    digitalWrite(LED_BLUE, HIGH);
+}
+
 // Favorite queries
 // DM0 Read number of sorted ICs total
 // DM8 Read number of jams total
