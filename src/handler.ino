@@ -20,10 +20,10 @@ static void buf_clear(
 static void buf_wait(
     uint8_t seconds = 10)
 {
-    uint8_t idx;
+    uint8_t idx = 0;
     while (!Serial.available()) {
+        delay(100);
         if (idx > seconds-1) {
-            delay(100);
             break;
         }
         idx++;
@@ -45,7 +45,7 @@ static uint8_t handler_enq(
             return 0; // fail
         }
         Serial.write(out);
-        delay(100);
+        buf_wait();
         if (Serial.available()) {
             inByte = Serial.read();
         }
@@ -74,7 +74,7 @@ static uint8_t handler_ack(
     uint8_t inByte = 0;
 
     buf_wait();
-    inByte = Serial.read();
+    inByte = (char) Serial.read();
     if (inByte == ASCII_ENQ) {
         Serial.write(out);
         return 1; // success
@@ -143,7 +143,7 @@ void handler_compose_json(
     JsonObject& root = jsonBuffer.createObject();
     root["table"] = "demo";
     root["client"] = CLIENT_NAME;
-    root["handler_id"] = "ID0001";
+    root["handler_id"] = response;
     root["temperature"] = environment_temperature();
     root["humidity"] = environment_humidity();
 
