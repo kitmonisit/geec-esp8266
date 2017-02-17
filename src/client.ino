@@ -227,7 +227,6 @@ void stream_end(
     }
     // Serial.println();
     while (client.available()) {
-        delay(1);
         client.read(buf, 1);
         // Serial.printf("%c", *buf);
     }
