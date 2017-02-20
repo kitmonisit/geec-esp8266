@@ -11,7 +11,7 @@
 static void buf_clear(
     void)
 {
-    delay(1000);
+    delay(100);
     while (Serial.available() > 0) {
         Serial.read();
     }
