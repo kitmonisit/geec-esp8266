@@ -131,24 +131,29 @@ static uint8_t handler_query_sequence(
 }
 
 void handler_compose_json(
-    const char *const query,
-          char *const json_out)
+  const char *const query,
+        char *const json_out)
 {
-    StaticJsonBuffer<256> jsonBuffer;
-    char response[256];
-    memset(response, '\0', sizeof(response));
+  StaticJsonBuffer<256> jsonBuffer;
+  char response[256];
+  memset(response, '\0', sizeof(response));
 
-    handler_query_sequence(query, response);
+  handler_query_sequence(query, response);
 
-    JsonObject& root = jsonBuffer.createObject();
-    root["table"] = "demo";
-    root["client"] = CLIENT_NAME;
-    root["handler_id"] = response;
-    root["temperature"] = environment_temperature();
-    root["humidity"] = environment_humidity();
+  JsonObject& root = jsonBuffer.createObject();
 
-    root.printTo(json_out, 256);
+  JsonObject& handler = root.createNestedObject("handler");
+  handler["ID"] = CLIENT_NAME;
+  handler["type"] = "Flex";
+  JsonObject& sensors = handler.createNestedObject("sensors");
+  sensors["temp"] = environment_temperature();
+  sensors["rh"] = environment_humidity();
+  JsonObject& metadata = handler.createNestedObject("metadata");
+  metadata["status"] = "repair";
+  metadata["error"] = "jam";
+
+  root.printTo(json_out, 256);
 }
 
-// vim:fdm=syntax
+// vim:fdm=syntax:sw=2
 

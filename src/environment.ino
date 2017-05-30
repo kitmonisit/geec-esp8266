@@ -8,30 +8,32 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 
 void environment_setup()
 {
-    dht.begin();
+  dht.begin();
 }
 
-float environment_temperature() {
-    sensors_event_t event;
+float environment_temperature()
+{
+  sensors_event_t event;
 
-    dht.temperature().getEvent(&event);
-    if (isnan(event.temperature)) {
-        return 0;
-    } else {
-        return event.temperature;
-    }
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    return 0;
+  } else {
+    return event.temperature;
+  }
 }
 
-float environment_humidity() {
-    sensors_event_t event;
+float environment_humidity()
+{
+  sensors_event_t event;
 
-    dht.humidity().getEvent(&event);
-    if (isnan(event.temperature)) {
-        return 0;
-    } else {
-        return event.relative_humidity;
-    }
+  dht.humidity().getEvent(&event);
+  if (isnan(event.temperature)) {
+    return 0;
+  } else {
+    return event.relative_humidity;
+  }
 }
 
-// vim:fdm=syntax
+// vim:fdm=syntax:sw=2
 

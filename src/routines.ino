@@ -88,6 +88,13 @@ void routine_HandlerEmulate(void)
     digitalWrite(LED_BLUE, HIGH);
 }
 
+void routine_ADTS2017(void)
+{
+  stream_begin();
+  stream_add_json("CDA");
+  stream_end();
+}
+
 // Favorite queries
 // DM0 Read number of sorted ICs total
 // DM8 Read number of jams total
@@ -101,4 +108,4 @@ void routine_HandlerEmulate(void)
 // Mean Units Between Assists
 // MUBA = DM0 / DM8
 
-// vim:fdm=syntax
+// vim:fdm=syntax:sw=2
