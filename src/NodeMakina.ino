@@ -40,7 +40,7 @@ void setup() {
   environment_setup();
   connectToWiFi();
 
-  ts.add(0, 1000, routine_ADTS2017);
+  ts.add(0, 5000, routine_ADTS2017);
 }
 
 void loop() {
@@ -48,4 +48,3 @@ void loop() {
 }
 
 // vim:fdm=syntax:sw=2
-

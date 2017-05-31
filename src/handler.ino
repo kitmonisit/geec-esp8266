@@ -57,77 +57,77 @@ static uint8_t handler_enq(
 static void handler_query(
     const char *const query)
 {
-    char out[100];
-    memset(out, '\0', sizeof(out));
+  char out[100];
+  memset(out, '\0', sizeof(out));
 
-    *out = ASCII_STX;
-    strcpy(out + 1, query);
-    *(out + 1 + strlen(query)) = ASCII_ETX;
+  *out = ASCII_STX;
+  strcpy(out + 1, query);
+  *(out + 1 + strlen(query)) = ASCII_ETX;
 
-    Serial.write(out);
+  Serial.write(out);
 }
 
 static uint8_t handler_ack(
-    void)
+  void)
 {
-    char out[2] = {ASCII_ACK, '\0'};
-    uint8_t inByte = 0;
+  char out[2] = {ASCII_ACK, '\0'};
+  uint8_t inByte = 0;
 
-    buf_wait();
-    inByte = (char) Serial.read();
-    if (inByte == ASCII_ENQ) {
-        Serial.write(out);
-        return 1; // success
-    } else {
-        return 0; // fail
-    }
+  buf_wait();
+  inByte = (char) Serial.read();
+  if (inByte == ASCII_ENQ) {
+    Serial.write(out);
+    return 1; // success
+  } else {
+    return 0; // fail
+  }
 }
 
 static uint8_t handler_read(
-    char *const response)
+  char *const response)
 {
-    char inByte;
-    uint8_t idx = 0;
+  char inByte;
+  uint8_t idx = 0;
 
-    buf_wait();
-    while (Serial.available()) {
-        inByte = (char) Serial.read();
-        if (inByte == ASCII_STX || inByte == ASCII_CR || inByte == ASCII_LF) {
-        } else if (inByte == ASCII_ETX) {
-            *(response + idx) = '\0';
-            break;
-        } else {
-            *(response + idx) = inByte;
-            idx++;
-        }
-        buf_wait();
+  buf_wait();
+  while (Serial.available()) {
+    inByte = (char) Serial.read();
+    if (inByte == ASCII_STX || inByte == ASCII_CR || inByte == ASCII_LF) {
+    } else if (inByte == ASCII_ETX) {
+      *(response + idx) = '\0';
+      break;
+    } else {
+      *(response + idx) = inByte;
+      idx++;
     }
+    buf_wait();
+  }
 
-    return 1; // success
+  return 1; // success
 }
 
 static uint8_t handler_query_sequence(
-    const char *const query,
-          char *const response)
+  const char *const query,
+        char *const response)
 {
-    if (handler_enq()) {
-        handler_query(query);
-        if (handler_ack()) {
-            handler_read(response);
-            handler_ack();
-            buf_clear();
-        } else {
-            // Serial.println("FAIL handler_ack");
-            buf_clear();
-            sprintf(response, "FAIL handler ack");
-            return 0; // fail
-        }
+  if (handler_enq()) {
+    handler_query(query);
+    if (handler_ack()) {
+      handler_read(response);
+      handler_ack();
+      buf_clear();
     } else {
-        // Serial.println("FAIL handler_enq");
-        buf_clear();
-        sprintf(response, "FAIL handler_enq");
-        return 0; // fail
+      // Serial.println("FAIL handler_ack");
+      buf_clear();
+      sprintf(response, "FAIL handler ack");
+      return 0; // fail
     }
+  } else {
+    // Serial.println("FAIL handler_enq");
+    buf_clear();
+    sprintf(response, "FAIL handler_enq");
+    return 0; // fail
+  }
 }
 
 void handler_compose_json(
@@ -138,7 +138,7 @@ void handler_compose_json(
   char response[256];
   memset(response, '\0', sizeof(response));
 
-  handler_query_sequence(query, response);
+  // handler_query_sequence(query, response);
 
   JsonObject& root = jsonBuffer.createObject();
 
@@ -156,4 +156,3 @@ void handler_compose_json(
 }
 
 // vim:fdm=syntax:sw=2
-
