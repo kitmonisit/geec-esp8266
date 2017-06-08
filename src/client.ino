@@ -2,8 +2,8 @@
 #include <ESP8266HTTPClient.h>
 #include <sodium.h>
 
-#define HOST              "35.185.167.138"
-#define HTTP_HOST         "http://35.185.167.138"
+#define HOST              "35.194.135.178"
+#define HTTP_HOST         "http://35.194.135.178"
 #define HTTP_PORT         80
 // #define HOST              "192.168.22.5"
 // #define HTTP_HOST         "http://192.168.22.5:5000"
