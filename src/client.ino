@@ -2,15 +2,17 @@
 #include <ESP8266HTTPClient.h>
 #include <sodium.h>
 
-#define HOST              "35.194.135.178"
-#define HTTP_HOST         "http://35.194.135.178"
+/*#define HOST              "35.194.135.178"*/
+/*#define HTTP_HOST         "http://35.194.135.178"*/
+#define HOST              "postman-echo.com"
+#define HTTP_HOST         "https://postman-echo.com"
+#define HTTP_ENDPOINT     "/post"
 #define HTTP_PORT         80
 // #define HOST              "192.168.22.5"
 // #define HTTP_HOST         "http://192.168.22.5:5000"
 // #define HTTP_PORT         5000
 #define CLIENT_NAME       "handler3"
 #define TIMEOUT           (uint16_t) 30000
-#define MAX_PLAINTEXT_LEN 130
 #define USE_ENCRYPTION    0
 
 static WiFiClient client;
@@ -27,58 +29,59 @@ static void ensure_WiFi(void)
 void stream_begin(void)
 {
   uint8_t status;
-  // Serial.println(F("\n\nstream_begin"));
   digitalWrite(LED_BLUE, LOW);
   ensure_WiFi();
 
   String payload = String("POST ")
-    + "/ HTTP/1.1\r\n"
+    + HTTP_ENDPOINT + " HTTP/1.1\r\n"
     + "Host: " + HOST + "\r\n"
     + "Cache-Control: no-cache\r\n"
     + "Content-Type: application/json\r\n";
 
   while (!client.connected()) {
-    // Serial.print("blah");
     status = client.connect(HOST, HTTP_PORT);
-    // Serial.print(status);
   }
-  Serial.print(payload);
   client.print(payload);
 }
 
 void stream_add(
   const char *const input)
 {
-  // input must be limited to 128 bytes total including null terminator
+  ensure_WiFi();
+  char content_length[5] = {0};
+
+  // Prepend input length
+  sprintf(content_length, "Content-Length: %d\r\n\r\n", (uint8_t) strlen(input));
+
+  client.print(content_length);
+  client.print(input);
+}
+
+void stream_query_all()
+{
+  EspClass esp;
   ensure_WiFi();
 
-  String payload;
+  DynamicJsonBuffer jsonBuffer;
 
-  uint16_t idx = 0;
-  const uint8_t plaintext_len = MAX_PLAINTEXT_LEN;
+  JsonObject &root = jsonBuffer.createObject();
+  stream_add_query_response_pair(root, "CDA");
+  stream_add_query_response_pair(root, "CKS");
+  stream_add_query_response_pair(root, "CZZ");
+
+  JsonObject &node = root.createNestedObject("node");
+  node["free RAM"] = esp.getFreeHeap();
+
+  JsonObject &env = root.createNestedObject("env");
+  env["temp"]     = environment_temperature();
+  env["rh"]       = environment_humidity();
+
+  // Prepend input length
   char content_length[5] = {0};
-  char plaintext[plaintext_len] = {0};
+  sprintf(content_length, "Content-Length: %d\r\n\r\n", (uint8_t) root.measureLength());
 
-  // Prepend orig input length
-  sprintf(content_length, "Content-Length: %d\r\n\r\n", (uint8_t) strlen(input));
-  // Append input string
-  strcpy(plaintext, input);
-
-  // Compose chunked data
-  // https://en.wikipedia.org/wiki/Chunked_transfer_encoding#Example
-
-  payload = String(content_length);
-  while (*(plaintext + idx) != '\0') {
-    payload.concat((char) *(plaintext + idx));
-    idx++;
-  }
-
-  // payload.concat("\n\r\n");
-  client.print(payload);
-
-  Serial.print(payload);
-  // Serial.print(F("stream_"));
-  // Serial.printf("%02d\n", stream_msg);
+  client.print(content_length);
+  root.printTo(client);
 }
 
 void stream_add_json(
@@ -123,6 +126,17 @@ void stream_end(
     client.read(buf, 1);
     Serial.printf("%c", *buf);
   }
+}
+
+static uint8_t stream_add_query_response_pair(
+  JsonObject &object,
+  const char *const query)
+{
+  char response[256];
+  handler_query_sequence_dummy(query, response);
+  JsonVariant variant = response;
+  object[query] = variant.as<String>();
+  return 0;
 }
 
 // vim:fdm=syntax:nowrap:sw=2

@@ -37,10 +37,10 @@ void setup() {
   digitalWrite(LED_RED, HIGH);
   digitalWrite(LED_BLUE, HIGH);
 
-  /*environment_setup();*/
-  /*connectToWiFi();*/
+  environment_setup();
+  connectToWiFi();
 
-  ts.add(0, 1000, routine_deploy);
+  ts.add(0, 5000, routine_deploy);
 }
 
 void loop() {

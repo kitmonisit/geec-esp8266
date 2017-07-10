@@ -130,31 +130,21 @@ static uint8_t handler_query_sequence(
   }
 }
 
+static uint8_t handler_query_sequence_dummy(
+  const char *const query,
+        char *const response)
+{
+  char prefix[] = "Your query is ";
+  strcat(prefix, query);
+  sprintf(response, prefix);
+  return 0;
+}
+
 void handler_compose_json(
   const char *const query,
         char *const json_out)
 {
-  StaticJsonBuffer<3072> jsonBuffer;
-  // char response[256];
-  // memset(response, '\0', sizeof(response));
-
-  // handler_query_sequence(query, response);
-
-  JsonObject& root = jsonBuffer.createObject();
-
-  JsonObject& handler      = root.createNestedObject("handler");
-  handler["ID"]            = CLIENT_NAME;
-  handler["type"]          = "Flex";
-
-  JsonObject& env = handler.createNestedObject("env");
-  env["temp"]             = environment_temperature();
-  env["rh"]               = environment_humidity();
-
-  JsonObject& handler_data = handler.createNestedObject("handler_data");
-  handler_data["status"]   = "repair";
-  handler_data["error"]    = "jam";
-
-  root.printTo(json_out, 3072);
+  sprintf(json_out, "Not Implemented");
 }
 
 // vim:fdm=syntax:sw=2
