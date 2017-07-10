@@ -95,6 +95,47 @@ void routine_ADTS2017(void)
   stream_end();
 }
 
+void routine_deploy(void)
+{
+  uint8_t idx = 0;
+  char json_out[3072] = {'\0'};
+
+  /*StaticJsonBuffer<3072> jsonBuffer;*/
+  DynamicJsonBuffer jsonBuffer;
+  // char response[256];
+  // memset(response, '\0', sizeof(response));
+
+  // handler_query_sequence(query, response);
+
+  JsonObject& root = jsonBuffer.createObject();
+
+  JsonObject& handler_data = root.createNestedObject("handler_data");
+  handler_data["status"]   = "repair";
+  handler_data["error"]    = "jam";
+  mod_object(handler_data, "CDA");
+  mod_object(handler_data, "CKS");
+
+  // root.printTo(json_out, 3072);
+  root.prettyPrintTo(Serial);
+
+  // while (*(json_out + idx) != '\0') {
+  //   Serial.printf("%c", *(json_out + idx));
+  //   idx++;
+  // }
+}
+
+void mod_object(
+  JsonObject &object,
+  const char *const query)
+{
+  char response[256];
+  /*handler_query_sequence(query, response);*/
+  sprintf(response, query);
+  JsonVariant variant = response;
+  object[query] = variant.as<String>();
+  object["modified"] = "new entry!";
+}
+
 // Favorite queries
 // DM0 Read number of sorted ICs total
 // DM8 Read number of jams total
