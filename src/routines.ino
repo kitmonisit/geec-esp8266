@@ -1,3 +1,5 @@
+static bool NETWORK_BUSY = 0;
+
 void routine_RAMCheck(void)
 {
     EspClass esp;
@@ -47,9 +49,15 @@ void routine_HandlerEmulate(void)
 
 void routine_deploy(void)
 {
-  stream_begin();
-  stream_query_all();
-  stream_end();
+  if (NETWORK_BUSY == 1) {
+    return;
+  } else {
+    NETWORK_BUSY = 1;
+    stream_begin();
+    stream_query_all();
+    stream_end();
+    NETWORK_BUSY = 0;
+  }
 }
 
 void routine_echo(void)
