@@ -59,7 +59,6 @@ void stream_add(
 
 void stream_query_all()
 {
-  EspClass esp;
   ensure_WiFi();
 
   DynamicJsonBuffer jsonBuffer;
@@ -70,7 +69,7 @@ void stream_query_all()
   stream_add_query_response_pair(root, "CZZ");
 
   JsonObject &node = root.createNestedObject("node");
-  node["free RAM"] = esp.getFreeHeap();
+  node["free RAM"] = node_get_free_RAM();
 
   JsonObject &env = root.createNestedObject("env");
   env["temp"]     = environment_temperature();
