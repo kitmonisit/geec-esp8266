@@ -4,6 +4,13 @@ def generate_query(line):
 with open('queries', 'r') as fd:
     out = map(generate_query, fd)
 
-for o in out:
+k = 0
+for n, o in enumerate(out):
     print o
+    if (n+1) % 5 == 0:
+        print k + 1
+        k += 1
 
+ss = "stream_begin();\nstream_query_{0:02d}();\nstream_end();"
+for n in range(28):
+    print ss.format(n)
