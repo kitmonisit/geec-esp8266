@@ -52,90 +52,90 @@ void routine_deploy(void)
   if (NETWORK_BUSY == 1) {
     return;
   } else {
+    const uint8_t element_size = 32;
+    char query_array[6][element_size];
+
     NETWORK_BUSY = 1;
     stream_begin();
-    stream_query_00();
+    misc_editArr(query_array, "CA", "CAS", "CB", "CD", "CDA", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_01();
+    misc_editArr(query_array, "CDC", "CDI", "CDN", "CDNH", "CDNL", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_02();
+    misc_editArr(query_array, "CDNU", "CDP", "CDS", "CDZ", "CE", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_03();
+    misc_editArr(query_array, "CEC", "CER", "CF", "CK", "CKA", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_04();
+    misc_editArr(query_array, "CKLD", "CKLS", "CKS", "CKTI", "CML", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_05();
+    misc_editArr(query_array, "CMM", "CN", "COB", "COF", "CQC", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_06();
+    misc_editArr(query_array, "CQI", "CQL", "CQO", "CQP", "CQU", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_07();
+    misc_editArr(query_array, "CSO", "CSOT", "CSR", "CSS", "CSSA", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_08();
+    misc_editArr(query_array, "CSS1T", "CSS2T", "CST", "CSW", "CSWA", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_09();
+    misc_editArr(query_array, "CVC", "CZASE", "CZD", "CZETP", "CZ 1 port status?", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_10();
+    misc_editArr(query_array, "CZ 2 port status?", "CZ 3 port status?", "CZSPA", "CZSPC", "CZTCBASE", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_11();
+    misc_editArr(query_array, "CZTCOR", "CZTPA", "CZTPC", "CZPWD", "DD", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_12();
+    misc_editArr(query_array, "DF", "DFA", "DM0", "DM1", "DM2", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_13();
+    misc_editArr(query_array, "DM3", "DM4", "DM5", "DM6", "DM7", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_14();
+    misc_editArr(query_array, "DM8", "DM9", "DM10", "DM11", "DM12", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_15();
+    misc_editArr(query_array, "DN0", "DN1", "DN2", "DN3", "DPY", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_16();
+    misc_editArr(query_array, "DPYD", "DPYP", "DPYR", "DPYS", "DPYT", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_17();
+    misc_editArr(query_array, "DPYY", "DT0", "DT1", "DT2", "DT3", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_18();
+    misc_editArr(query_array, "DT4", "DT5", "DT6", "DT7", "DT8", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_19();
+    misc_editArr(query_array, "DT9", "DT10", "DV 0", "DV 1", "DV 2", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_20();
+    misc_editArr(query_array, "DV 3", "DV 4", "DV 5", "DV 6", "DV 7", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_21();
+    misc_editArr(query_array, "DV 8", "DV 9", "DV 10", "DV 11", "DV 12", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_22();
+    misc_editArr(query_array, "DV 13", "DV 14", "DV 15", "DV 16", "DV 17", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_23();
+    misc_editArr(query_array, "DV 18", "DV 19", "DV 20", "DV 21", "DV 22", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_24();
+    misc_editArr(query_array, "DV 23", "DV 24", "DV 25", "DV 26", "DV 27", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_25();
+    misc_editArr(query_array, "DV 28", "DV 29", "DV 30", "DV 31", "DY", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     stream_begin();
-    stream_query_26();
-    stream_end();
-    stream_begin();
-    stream_query_27();
+    misc_editArr(query_array, "FAR", "HVRC", "HVRL", "HVRO", "HVRU", sizeof query_array, element_size);stream_query(query_array);
     stream_end();
     NETWORK_BUSY = 0;
   }
@@ -146,6 +146,28 @@ void routine_echo(void)
   stream_begin();
   stream_add("Hello world");
   stream_end();
+}
+
+void misc_editArr(
+          char arr[6][32],
+    const char *q0,
+    const char *q1,
+    const char *q2,
+    const char *q3,
+    const char *q4,
+    uint16_t arr_size,
+    uint8_t  element_size)
+{
+  uint8_t idx = 0;
+  uint8_t num_elements = arr_size/element_size;
+  memset(arr, 0, arr_size);
+
+  sprintf(arr[0], "%s", q0);
+  sprintf(arr[1], "%s", q1);
+  sprintf(arr[2], "%s", q2);
+  sprintf(arr[3], "%s", q3);
+  sprintf(arr[4], "%s", q4);
+  memset(arr[5], '\0', element_size);
 }
 
 // Favorite queries
@@ -161,4 +183,4 @@ void routine_echo(void)
 // Mean Units Between Assists
 // MUBA = DM0 / DM8
 
-// vim:fdm=syntax:sw=2
+// vim:fdm=syntax:nowrap:sw=2

@@ -141,10 +141,42 @@ static uint8_t handler_query_sequence_dummy(
 }
 
 void handler_compose_json(
-  const char *const query,
-        char *const json_out)
+        char  *json_out,
+        char query_array[6][32])
 {
-  sprintf(json_out, "Not Implemented");
+  uint8_t idx = 0;
+  DynamicJsonBuffer jsonBuffer;
+
+  JsonObject &root = jsonBuffer.createObject();
+
+  while (idx < 5) {
+    handler_mod_json(root, query_array[idx]);
+    idx++;
+  }
+
+  JsonObject &node = root.createNestedObject("node");
+  node["free RAM"] = node_get_free_RAM();
+  node["timestamp"]= 0;
+
+  JsonObject &env = root.createNestedObject("env");
+  env["temp"]     = environment_temperature();
+  env["rh"]       = environment_humidity();
+
+  root.printTo(json_out, root.measureLength());
+  return;
+}
+
+void handler_mod_json(
+  JsonObject &object,
+  const char *key)
+{
+  char value[256];
+  handler_query_sequence_dummy(key, value);
+  printf("%s: %s\n", key, value);
+
+  JsonVariant variant = value;
+  object[key] = variant.as<String>();
+  return;
 }
 
 // vim:fdm=syntax:sw=2

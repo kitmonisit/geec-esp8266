@@ -1,16 +1,28 @@
-def generate_query(line):
-    return 'stream_add_query_response_pair(root, "{0:s}");'.format(line[:-1])
+import itertools
+
+def cleanup_group(group_member):
+    if group_member: return group_member[:-1]
+
+def generate_query(group):
+    group = list(itertools.compress(map(cleanup_group, group), group))
+    ss0 = "\nmisc_editArr(query_array, "
+    ss1 = '''"{}", '''*len(group)
+    ss2 = "sizeof query_array, element_size);"
+    ss = ''.join(
+            ["stream_begin();",
+             ss0, ss1, ss2,
+             "stream_query(query_array);",
+             "\nstream_end();"]).format(*group)
+    return ss
+
+def grouper(iterable, n, fillvalue=None):
+    args = [iter(iterable)] * n
+    return itertools.izip_longest(fillvalue=fillvalue, *args)
 
 with open('queries', 'r') as fd:
-    out = map(generate_query, fd)
+    g = grouper(fd, 5)
+    while True:
+        try:
+            print generate_query(g.next())
+        except StopIteration: break
 
-k = 0
-for n, o in enumerate(out):
-    print o
-    if (n+1) % 5 == 0:
-        print k + 1
-        k += 1
-
-ss = "stream_begin();\nstream_query_{0:02d}();\nstream_end();"
-for n in range(28):
-    print ss.format(n)

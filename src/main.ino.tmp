@@ -1,0 +1,87 @@
+#include <TickerScheduler.h>
+#include <ArduinoJson.h>
+
+#define LED_RED       (uint8_t) 0
+#define LED_BLUE      (uint8_t) 2
+
+bool LED_ON = 0;
+bool SERIAL_BUSY = 0;
+static TickerScheduler ts(1);
+
+void setup()
+{
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
+  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_BLUE, HIGH);
+
+  Serial.begin(9600);
+  ts.add(0, 5000, routine);
+}
+
+void loop()
+{
+  ts.update();
+}
+
+void toggle_LED()
+{
+  if (LED_ON == 0) {
+    digitalWrite(LED_BLUE, LOW);
+    LED_ON = 1;
+  } else {
+    digitalWrite(LED_BLUE, HIGH);
+    LED_ON = 0;
+  }
+  return;
+}
+
+void routine()
+{
+  toggle_LED();
+
+  if (SERIAL_BUSY == 1) {
+    return;
+  } else {
+    char json_out[256];
+    const char *arr[] = {"A", "B", "C", "D", '\0'};
+
+    SERIAL_BUSY = 1;
+    create_json(json_out, arr);
+    Serial.printf("\n%s", json_out);
+    SERIAL_BUSY = 0;
+    return;
+  }
+}
+
+void create_json(
+        char  *json_out,
+  const char **key_array)
+{
+  uint8_t idx = 0;
+
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+
+  while (key_array[idx] != '\0') {
+    mod_json(root, key_array[idx]);
+    idx++;
+  }
+
+  root.prettyPrintTo(json_out, root.measurePrettyLength() + 1);
+  return;
+}
+
+void mod_json(
+  JsonObject &object,
+  const char *key)
+{
+  char value[256];
+  sprintf(value, "Your key is %s", key);
+
+  JsonVariant variant = value;
+  object[key] = variant.as<String>();
+  return;
+}
+
+// vim:fdm=syntax:sw=2
