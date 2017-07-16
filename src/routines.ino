@@ -52,7 +52,7 @@ void routine_deploy(void)
   if (NETWORK_BUSY == 1) {
     return;
   } else {
-    const uint8_t element_size = 32;
+    const uint8_t element_size = 64;
     char query_array[6][element_size];
 
     NETWORK_BUSY = 1;
@@ -149,7 +149,7 @@ void routine_echo(void)
 }
 
 void misc_editArr(
-          char arr[6][32],
+          char arr[6][64],
     const char *q0,
     const char *q1,
     const char *q2,

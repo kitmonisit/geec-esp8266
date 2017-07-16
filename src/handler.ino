@@ -142,7 +142,7 @@ static uint8_t handler_query_sequence_dummy(
 
 void handler_compose_json(
         char  *json_out,
-        char query_array[6][32])
+        char query_array[6][64])
 {
   uint8_t idx = 0;
   DynamicJsonBuffer jsonBuffer;
@@ -154,13 +154,13 @@ void handler_compose_json(
     idx++;
   }
 
-  JsonObject &node = root.createNestedObject("node");
-  node["free RAM"] = node_get_free_RAM();
-  node["timestamp"]= 0;
+  JsonObject &node  = root.createNestedObject("node");
+  node["free RAM"]  = node_get_free_RAM();
+  node["timestamp"] = 0;
 
-  JsonObject &env = root.createNestedObject("env");
-  env["temp"]     = environment_temperature();
-  env["rh"]       = environment_humidity();
+  JsonObject &env   = root.createNestedObject("env");
+  env["temp"]       = environment_temperature();
+  env["rh"]         = environment_humidity();
 
   root.printTo(json_out, root.measureLength());
   return;
@@ -172,10 +172,11 @@ void handler_mod_json(
 {
   char value[256];
   handler_query_sequence_dummy(key, value);
-  printf("%s: %s\n", key, value);
+  // printf("%s: %s\n", key, value);
 
   JsonVariant variant = value;
-  object[key] = variant.as<String>();
+  Serial.print(""); // Need this so that `port status?` query does not freeze. WEIRD.
+  object.set(key, variant.as<String>());
   return;
 }
 

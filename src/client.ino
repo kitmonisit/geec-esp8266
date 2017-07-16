@@ -58,40 +58,19 @@ void stream_add(
 }
 
 void stream_query(
-  char query_array[6][32])
+  char query_array[6][64])
 {
   ensure_WiFi();
+  char json_out[1024];
 
-  // char json_out[1024];
-
-  uint8_t idx = 0;
-  DynamicJsonBuffer jsonBuffer;
-
-  JsonObject &root = jsonBuffer.createObject();
-
-  while (idx < 5) {
-    handler_mod_json(root, query_array[idx]);
-    idx++;
-  }
-
-  JsonObject &node = root.createNestedObject("node");
-  node["free RAM"] = node_get_free_RAM();
-  node["timestamp"]= 0;
-
-  JsonObject &env = root.createNestedObject("env");
-  env["temp"]     = environment_temperature();
-  env["rh"]       = environment_humidity();
-
-
-  // handler_compose_json(json_out, query_array);
+  handler_compose_json(json_out, query_array);
 
   // Prepend input length
   char content_length[64] = {0};
-  sprintf(content_length, "Content-Length: %d\r\n\r\n", (uint8_t) root.measureLength());
+  sprintf(content_length, "Content-Length: %d\r\n\r\n", (uint16_t) strlen(json_out));
 
   client.print(content_length);
-  root.printTo(client);
-  // client.print(json_out);
+  client.print(json_out);
   return;
 }
 
