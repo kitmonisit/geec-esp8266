@@ -1,6 +1,6 @@
 #include <ArduinoJson.h>
 
-#define MAX_ATTEMPTS 10
+#define MAX_ATTEMPTS 100
 #define ASCII_STX 0x02
 #define ASCII_ETX 0x03
 #define ASCII_ENQ 0x05
@@ -44,6 +44,7 @@ static uint8_t handler_enq(
         if (attempts > MAX_ATTEMPTS) {
             return 0; // fail
         }
+        buf_clear();
         Serial.write(out);
         buf_wait();
         if (Serial.available()) {
