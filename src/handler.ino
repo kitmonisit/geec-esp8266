@@ -72,15 +72,20 @@ static uint8_t handler_ack(
   void)
 {
   char out[2] = {ASCII_ACK, '\0'};
+  uint8_t attempts = 0;
   uint8_t inByte = 0;
 
-  buf_wait();
-  inByte = (char) Serial.read();
-  if (inByte == ASCII_ENQ) {
-    Serial.write(out);
-    return 1; // success
-  } else {
-    return 0; // fail
+  while (inByte != ASCII_ENQ) {
+    buf_wait();
+    inByte = (char) Serial.read();
+    if (inByte == ASCII_ENQ) {
+      Serial.write(out);
+      return 1; // success
+    }
+    attempts++;
+    if (attempts > MAX_ATTEMPTS) {
+      return 0; // fail
+    }
   }
 }
 
