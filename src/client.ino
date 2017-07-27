@@ -87,7 +87,7 @@ void stream_end(
   // Serial.print(F("stream_end\n"));
   digitalWrite(LED_BLUE, HIGH);
 
-  Serial.print(F("\nresponse\n"));
+  // Serial.print(F("\nresponse\n"));
   while (!client.available()) {
     delay(500);
     listen_attempts++;
@@ -96,12 +96,12 @@ void stream_end(
       return;
     }
   }
-  Serial.println();
+  // Serial.println();
   while (client.available()) {
     client.read(buf, 1);
-    Serial.printf("%c", *buf);
+    // Serial.printf("%c", *buf);
   }
-  Serial.println();
+  // Serial.println();
   return;
 }
 

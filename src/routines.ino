@@ -3,7 +3,7 @@ static bool NETWORK_BUSY = 0;
 void routine_RAMCheck(void)
 {
     EspClass esp;
-    Serial.printf("%d free RAM\n", esp.getFreeHeap());
+    // Serial.printf("%d free RAM\n", esp.getFreeHeap());
 }
 
 void routine_LupangHinirang(void)

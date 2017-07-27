@@ -12,19 +12,19 @@ static TickerScheduler ts(1);
 void connectToWiFi() {
   delay(10);
   digitalWrite(LED_RED, LOW);
-  Serial.print(F("\nConnecting to "));
-  Serial.print(F("WiFi"));
+  // Serial.print(F("\nConnecting to "));
+  // Serial.print(F("WiFi"));
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(F("."));
+    // Serial.print(F("."));
   }
 
-  Serial.print(F("\n"));
-  Serial.print(F("WiFi connected\n"));
-  Serial.print(F("IP address: "));
-  Serial.println(WiFi.localIP());
+  // Serial.print(F("\n"));
+  // Serial.print(F("WiFi connected\n"));
+  // Serial.print(F("IP address: "));
+  // Serial.println(WiFi.localIP());
   digitalWrite(LED_RED, HIGH);
 }
 
