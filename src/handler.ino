@@ -171,7 +171,7 @@ void handler_mod_json(
   const char *key)
 {
   char value[256];
-  handler_query_sequence_dummy(key, value);
+  handler_query_sequence(key, value);
   // printf("%s: %s\n", key, value);
 
   JsonVariant variant = value;
