@@ -3,4 +3,6 @@
 .pioenvs
 .piolibdeps
 
+.DS_Store
 sh.exe.stackdump
+.vscode
